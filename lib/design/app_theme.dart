@@ -1,23 +1,16 @@
 import 'package:flutter/material.dart';
+import 'app_skin.dart';
+export 'app_skin.dart';
 
-class AppColors {
-  static const paper = Color(0xFFF6F4EF);
-  static const ink = Color(0xFF263C35);
-  static const forest = Color(0xFF244C3F);
-  static const lime = Color(0xFFE0EEAC);
-  static const muted = Color(0xFF72796F);
-  static const line = Color(0xFFE5E5DB);
-  static const rust = Color(0xFFAF4E2E);
-}
-
-ThemeData buildAppTheme() {
-  final scheme = ColorScheme.fromSeed(seedColor: AppColors.forest).copyWith(
-    primary: AppColors.forest,
+ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
+  final colors = skin.palette;
+  final scheme = ColorScheme.fromSeed(seedColor: colors.forest).copyWith(
+    primary: colors.forest,
     onPrimary: Colors.white,
-    secondary: AppColors.forest,
-    surface: AppColors.paper,
-    onSurface: AppColors.ink,
-    outlineVariant: AppColors.line,
+    secondary: colors.forest,
+    surface: colors.paper,
+    onSurface: colors.ink,
+    outlineVariant: colors.line,
   );
   final base = ThemeData(
     useMaterial3: true,
@@ -25,27 +18,28 @@ ThemeData buildAppTheme() {
     colorScheme: scheme,
   );
   final text = base.textTheme.apply(
-    bodyColor: AppColors.ink,
-    displayColor: AppColors.ink,
+    bodyColor: colors.ink,
+    displayColor: colors.ink,
   );
   return base.copyWith(
-    scaffoldBackgroundColor: AppColors.paper,
+    extensions: [colors],
+    scaffoldBackgroundColor: colors.paper,
     textTheme: text.copyWith(
-      headlineLarge: const TextStyle(
+      headlineLarge: TextStyle(
         fontFamily: 'Paperlogy',
         fontSize: 32,
         height: 1.3,
         fontWeight: FontWeight.w700,
         letterSpacing: -1.3,
-        color: AppColors.ink,
+        color: colors.ink,
       ),
-      headlineMedium: const TextStyle(
+      headlineMedium: TextStyle(
         fontFamily: 'Paperlogy',
         fontSize: 27,
         height: 1.35,
         fontWeight: FontWeight.w700,
         letterSpacing: -1,
-        color: AppColors.ink,
+        color: colors.ink,
       ),
       titleLarge: text.titleLarge?.copyWith(
         fontSize: 20,
@@ -68,16 +62,16 @@ ThemeData buildAppTheme() {
         letterSpacing: -.3,
       ),
     ),
-    appBarTheme: const AppBarTheme(
-      backgroundColor: AppColors.paper,
-      foregroundColor: AppColors.ink,
+    appBarTheme: AppBarTheme(
+      backgroundColor: colors.paper,
+      foregroundColor: colors.ink,
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
         fontFamily: 'Paperlogy',
         fontSize: 18,
         fontWeight: FontWeight.w600,
-        color: AppColors.ink,
+        color: colors.ink,
       ),
     ),
     cardTheme: CardThemeData(
@@ -86,7 +80,7 @@ ThemeData buildAppTheme() {
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(22),
-        side: const BorderSide(color: AppColors.line, width: .8),
+        side: BorderSide(color: colors.line, width: .8),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
@@ -95,15 +89,15 @@ ThemeData buildAppTheme() {
       contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.line),
+        borderSide: BorderSide(color: colors.line),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.line),
+        borderSide: BorderSide(color: colors.line),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.forest, width: 1.5),
+        borderSide: BorderSide(color: colors.forest, width: 1.5),
       ),
     ),
     filledButtonTheme: FilledButtonThemeData(
@@ -119,13 +113,13 @@ ThemeData buildAppTheme() {
     ),
     chipTheme: base.chipTheme.copyWith(
       side: BorderSide.none,
-      backgroundColor: const Color(0xFFECEDE5),
-      selectedColor: AppColors.lime,
+      backgroundColor: colors.soft,
+      selectedColor: colors.lime,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: AppColors.paper,
-      indicatorColor: AppColors.lime,
+      backgroundColor: colors.paper,
+      indicatorColor: colors.lime,
       elevation: 0,
       height: 76,
       labelTextStyle: WidgetStateProperty.all(
@@ -136,15 +130,11 @@ ThemeData buildAppTheme() {
         ),
       ),
     ),
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: AppColors.forest,
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: colors.forest,
       foregroundColor: Colors.white,
       elevation: 3,
     ),
-    dividerTheme: const DividerThemeData(
-      color: AppColors.line,
-      thickness: 1,
-      space: 1,
-    ),
+    dividerTheme: DividerThemeData(color: colors.line, thickness: 1, space: 1),
   );
 }

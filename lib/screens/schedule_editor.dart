@@ -319,9 +319,12 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   '선택하지 않으면 이 일정의 알림을 끌 수 있어요.',
-                  style: TextStyle(fontSize: 12, color: AppColors.muted),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: context.appColors.muted,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Wrap(
@@ -374,9 +377,12 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
                       fontSize: 12,
                     ),
                   ),
-                const Text(
+                Text(
                   '지난 알림은 보내지 않아요. 절전 상태에서는 알림이 늦어질 수 있어요.',
-                  style: TextStyle(fontSize: 11, color: AppColors.muted),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: context.appColors.muted,
+                  ),
                 ),
                 const SizedBox(height: 24),
                 TextFormField(

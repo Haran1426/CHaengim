@@ -1,3 +1,4 @@
+import 'support/commerce_fakes.dart' show MemoryAppearanceStorage;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_first_app/main.dart';
@@ -8,7 +9,9 @@ import 'schedule_store_test.dart' show MemoryStorage;
 void main() {
   testWidgets('일정 추가, 준비물 체크, 홈 반영과 앱 재시작 복원', (tester) async {
     final storage = MemoryStorage();
-    await tester.pumpWidget(MyApp(storage: storage));
+    await tester.pumpWidget(
+      MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
+    );
     await tester.pumpAndSettle();
     expect(find.text('지금 챙길 일정이 없어요'), findsOneWidget);
     await tester.tap(find.widgetWithText(FloatingActionButton, '일정 추가'));
@@ -44,7 +47,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('준비물 1/1 완료 · 0개 남음'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
-    await tester.pumpWidget(MyApp(storage: storage));
+    await tester.pumpWidget(
+      MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
+    );
     await tester.pumpAndSettle();
     expect(find.text('장학금 신청'), findsOneWidget);
     expect(find.text('준비물 1/1 완료 · 0개 남음'), findsOneWidget);
@@ -60,7 +65,9 @@ void main() {
         stage: ScheduleStage.completed,
       ),
     ]);
-    await tester.pumpWidget(MyApp(storage: storage));
+    await tester.pumpWidget(
+      MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
+    );
     await tester.pumpAndSettle();
     expect(find.text('완료된 일정'), findsNothing);
     await tester.tap(find.text('일정'));

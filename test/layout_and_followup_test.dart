@@ -1,3 +1,4 @@
+import 'support/commerce_fakes.dart' show MemoryAppearanceStorage;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_first_app/main.dart';
@@ -24,7 +25,9 @@ void main() {
         items: const [Preparation(title: '가구원 정보 제공 동의와 증명 서류 준비')],
       ),
     ]);
-    await tester.pumpWidget(MyApp(storage: storage));
+    await tester.pumpWidget(
+      MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
+    );
     await tester.pumpAndSettle();
     expect(tester.takeException(), null);
     await tester.tap(find.text('일정'));
@@ -48,7 +51,9 @@ void main() {
         stage: ScheduleStage.submitted,
       ),
     ]);
-    await tester.pumpWidget(MyApp(storage: storage));
+    await tester.pumpWidget(
+      MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byType(ScheduleCard));
     await tester.pumpAndSettle();

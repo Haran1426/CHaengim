@@ -34,6 +34,7 @@ migrate_working_dir/
 /coverage/
 .gradle/
 .cxx/
+.kotlin/
 .flutter-plugins
 .packages
 **/Flutter/ephemeral/

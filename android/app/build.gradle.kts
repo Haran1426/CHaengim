@@ -24,6 +24,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Defaults to Google's demo app. Release ads remain off without Dart configuration.
+        manifestPlaceholders["admobAppId"] = providers.gradleProperty("admobAppId")
+            .getOrElse("ca-app-pub-3940256099942544~3347511713")
     }
 
     buildTypes {

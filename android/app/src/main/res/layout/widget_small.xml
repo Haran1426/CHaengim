@@ -2,7 +2,7 @@
     android:id="@+id/widget_root" android:layout_width="match_parent" android:layout_height="match_parent"
     android:orientation="vertical" android:background="@drawable/widget_background" android:padding="16dp">
     <LinearLayout android:layout_width="match_parent" android:layout_height="32dp" android:gravity="center_vertical">
-        <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="챙김" android:textColor="#E0EEAC" android:textSize="13sp" android:fontFamily="@font/paperlogy_semibold" />
+        <TextView android:id="@+id/widget_brand" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="챙김" android:textColor="#E0EEAC" android:textSize="13sp" android:fontFamily="@font/paperlogy_semibold" />
         <TextView android:id="@+id/widget_add" android:layout_width="36dp" android:layout_height="32dp" android:gravity="center" android:text="+" android:textSize="24sp" android:textColor="#E0EEAC" android:background="@drawable/widget_add_background" android:contentDescription="새 일정 추가" />
     </LinearLayout>
     <LinearLayout android:id="@+id/row_one" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:orientation="vertical" android:gravity="center_vertical">

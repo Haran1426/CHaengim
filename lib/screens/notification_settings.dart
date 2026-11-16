@@ -78,9 +78,9 @@ class _NotificationSettingsState extends State<NotificationSettings>
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 '알림 날짜와 시각은 각 일정의 수정 화면에서 선택할 수 있어요.',
-                style: TextStyle(color: AppColors.muted, fontSize: 13),
+                style: TextStyle(color: context.appColors.muted, fontSize: 13),
               ),
               const SizedBox(height: 28),
               if (error != null) ...[
@@ -113,7 +113,7 @@ class _NotificationSettingsState extends State<NotificationSettings>
                   padding: const EdgeInsets.all(22),
                   decoration: BoxDecoration(
                     color: current.allowed && current.enabled
-                        ? AppColors.lime
+                        ? context.appColors.lime
                         : const Color(0xFFFFEBDD),
                     borderRadius: BorderRadius.circular(22),
                   ),
@@ -187,10 +187,10 @@ class _NotificationSettingsState extends State<NotificationSettings>
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 '• 새 일정은 1일 전 오전 9시 알림을 제안해요.\n• 당일·1·3·7일 전을 원하는 만큼 선택할 수 있어요.\n• 기존 일정에는 알림을 자동 추가하지 않아요.\n• 절전·강제 종료·제조사 설정에 따라 알림이 늦어지거나 제한될 수 있어요.\n• 마감 시각 이후로 늦어진 사전 알림은 보내지 않아요.',
                 style: TextStyle(
-                  color: AppColors.muted,
+                  color: context.appColors.muted,
                   fontSize: 12,
                   height: 1.9,
                 ),

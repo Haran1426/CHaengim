@@ -1,3 +1,4 @@
+import 'support/commerce_fakes.dart' show MemoryAppearanceStorage;
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,7 +19,9 @@ void main() {
         deadline: DateTime.now().add(const Duration(days: 20)),
       ),
     ]);
-    await tester.pumpWidget(MyApp(storage: storage));
+    await tester.pumpWidget(
+      MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byType(ScheduleCard));
     await tester.pumpAndSettle();

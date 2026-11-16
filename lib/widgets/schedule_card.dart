@@ -14,15 +14,19 @@ class ScheduleCard extends StatelessWidget {
   final bool featured;
   @override
   Widget build(BuildContext context) {
-    final ink = featured ? Colors.white : AppColors.ink;
-    final secondary = featured ? const Color(0xFFC3D4C9) : AppColors.muted;
+    final ink = featured ? Colors.white : context.appColors.ink;
+    final secondary = featured
+        ? context.appColors.onForestMuted
+        : context.appColors.muted;
     final urgent =
         !schedule.isCompleted && schedule.daysLeft(DateTime.now()) <= 3;
     return Material(
-      color: featured ? AppColors.forest : Colors.white,
+      color: featured ? context.appColors.forest : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: featured ? AppColors.forest : AppColors.line),
+        side: BorderSide(
+          color: featured ? context.appColors.forest : context.appColors.line,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -52,10 +56,10 @@ class ScheduleCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: featured
-                          ? AppColors.lime
+                          ? context.appColors.lime
                           : urgent
                           ? const Color(0xFFFFE9DC)
-                          : const Color(0xFFF0F2E8),
+                          : context.appColors.soft,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -64,8 +68,8 @@ class ScheduleCard extends StatelessWidget {
                           : schedule.dDay(DateTime.now()),
                       style: TextStyle(
                         color: urgent && !featured
-                            ? AppColors.rust
-                            : AppColors.forest,
+                            ? context.appColors.rust
+                            : context.appColors.forest,
                         fontWeight: FontWeight.w700,
                         fontSize: featured ? 19 : 13,
                       ),
@@ -97,7 +101,9 @@ class ScheduleCard extends StatelessWidget {
                   Icon(
                     Icons.check_circle_outline_rounded,
                     size: 17,
-                    color: featured ? AppColors.lime : AppColors.forest,
+                    color: featured
+                        ? context.appColors.lime
+                        : context.appColors.forest,
                   ),
                   const SizedBox(width: 7),
                   Expanded(
@@ -122,10 +128,12 @@ class ScheduleCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     minHeight: 4,
-                    color: featured ? AppColors.lime : AppColors.forest,
+                    color: featured
+                        ? context.appColors.lime
+                        : context.appColors.forest,
                     backgroundColor: featured
-                        ? const Color(0xFF416455)
-                        : AppColors.line,
+                        ? context.appColors.progressTrack
+                        : context.appColors.line,
                     value:
                         (schedule.items.length - schedule.remaining) /
                         schedule.items.length,

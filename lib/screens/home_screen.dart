@@ -9,11 +9,27 @@ import 'schedule_editor.dart';
 import 'schedule_detail.dart';
 import 'widget_guide.dart';
 import 'notification_settings.dart';
+import '../data/appearance_store.dart';
+import '../data/plus_store.dart';
+import '../platform/ads_controller.dart';
+import '../widgets/sponsor_banner.dart';
+import 'appearance_screen.dart';
+import 'plus_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.store, required this.bridge});
+  const HomeScreen({
+    super.key,
+    required this.store,
+    required this.bridge,
+    required this.appearance,
+    required this.plus,
+    required this.ads,
+  });
   final ScheduleStore store;
   final WidgetBridge bridge;
+  final AppearanceStore appearance;
+  final PlusStore plus;
+  final AdsController ads;
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -78,6 +94,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      widget.plus.refresh();
+      widget.appearance.retry();
       setState(() {});
       widget.store.syncWidget().then((_) {
         if (mounted) setState(() {});
@@ -122,7 +140,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
-    listenable: widget.store,
+    listenable: Listenable.merge([
+      widget.store,
+      widget.plus,
+      widget.ads,
+      widget.appearance,
+    ]),
     builder: (context, _) {
       final store = widget.store;
       final now = DateTime.now();
@@ -160,12 +183,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: AppColors.forest,
+                  color: context.appColors.forest,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.done_all_rounded,
-                  color: AppColors.lime,
+                  color: context.appColors.lime,
                   size: 20,
                 ),
               ),
@@ -191,8 +214,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ],
         ),
         bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: AppColors.line)),
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: context.appColors.line)),
           ),
           child: NavigationBar(
             selectedIndex: tab,
@@ -270,8 +293,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       if (tab == 0) ...[
                         Text(
                           '${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')}  ${['월', '화', '수', '목', '금', '토', '일'][now.weekday - 1]}요일',
-                          style: const TextStyle(
-                            color: AppColors.muted,
+                          style: TextStyle(
+                            color: context.appColors.muted,
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
                           ),
@@ -282,10 +305,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           style: Theme.of(context).textTheme.headlineLarge,
                         ),
                         const SizedBox(height: 8),
-                        const Text(
+                        Text(
                           '하나씩 준비하고, 가볍게 마무리해요.',
                           style: TextStyle(
-                            color: AppColors.muted,
+                            color: context.appColors.muted,
                             fontSize: 13,
                           ),
                         ),
@@ -308,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             Container(
                               height: 30,
                               width: 1,
-                              color: AppColors.line,
+                              color: context.appColors.line,
                             ),
                             Expanded(
                               child: _stat('남은 준비물', preparations.length, '개'),
@@ -316,7 +339,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             Container(
                               height: 30,
                               width: 1,
-                              color: AppColors.line,
+                              color: context.appColors.line,
                             ),
                             Expanded(
                               child: _stat(
@@ -340,16 +363,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           Container(
                             padding: const EdgeInsets.all(22),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEDEFE5),
+                              color: context.appColors.soft,
                               borderRadius: BorderRadius.circular(18),
                             ),
                             child: Text(
                               active.isEmpty
                                   ? '일정을 추가하면 준비할 일을 모아드려요.'
                                   : '등록한 준비물은 모두 챙겼어요.\n실제 제출·처리도 마쳤는지 확인해보세요.',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
-                                color: AppColors.muted,
+                                color: context.appColors.muted,
                               ),
                             ),
                           )
@@ -379,9 +402,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                         entry.schedule.title,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 11,
-                                          color: AppColors.muted,
+                                          color: context.appColors.muted,
                                         ),
                                       ),
                                       secondary: IconButton(
@@ -455,10 +478,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                 ),
                               )
                         else
-                          const Text(
+                          Text(
                             '다가오는 일정은 여기에 모아드려요.',
                             style: TextStyle(
-                              color: AppColors.muted,
+                              color: context.appColors.muted,
                               fontSize: 13,
                             ),
                           ),
@@ -469,14 +492,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           child: Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              border: Border.all(color: AppColors.line),
+                              border: Border.all(color: context.appColors.line),
                               borderRadius: BorderRadius.circular(18),
                             ),
-                            child: const Row(
+                            child: Row(
                               children: [
                                 Icon(
                                   Icons.widgets_outlined,
-                                  color: AppColors.forest,
+                                  color: context.appColors.forest,
                                 ),
                                 SizedBox(width: 12),
                                 Expanded(
@@ -593,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: AppColors.lime,
+                            color: context.appColors.lime,
                             borderRadius: BorderRadius.circular(24),
                           ),
                           child: Row(
@@ -612,6 +635,70 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                       .where((s) => s.isCompleted)
                                       .length,
                                   '개',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 26),
+                        _section('내 취향으로 챙기기', null),
+                        const SizedBox(height: 14),
+                        Card(
+                          child: Column(
+                            children: [
+                              ListTile(
+                                key: const ValueKey('open-appearance'),
+                                contentPadding: const EdgeInsets.all(16),
+                                leading: const Icon(Icons.palette_outlined),
+                                title: const Text(
+                                  '테마 꾸미기',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  '${widget.appearance.active.label} · 앱과 위젯의 색 바꾸기',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => AppearanceScreen(
+                                      appearance: widget.appearance,
+                                      plus: widget.plus,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const Divider(indent: 16, endIndent: 16),
+                              ListTile(
+                                key: const ValueKey('open-plus'),
+                                contentPadding: const EdgeInsets.all(16),
+                                leading: const Icon(
+                                  Icons.auto_awesome_outlined,
+                                ),
+                                title: Text(
+                                  widget.plus.isPlus
+                                      ? '챙김 플러스 · 사용 중'
+                                      : '챙김 플러스',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                subtitle: const Text(
+                                  '광고 제거와 취향을 담은 테마',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                trailing: const Icon(Icons.chevron_right),
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute<void>(
+                                    builder: (_) =>
+                                        PlusScreen(plus: widget.plus),
+                                  ),
                                 ),
                               ),
                             ],
@@ -661,10 +748,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                         const SizedBox(height: 24),
                         _section('데이터 안내', null),
                         const SizedBox(height: 12),
-                        const Text(
+                        Text(
                           '일정은 현재 기기에 저장돼요. 앱 삭제 시 데이터가 삭제될 수 있어요. 클라우드 백업은 아직 제공하지 않아요.',
                           style: TextStyle(
-                            color: AppColors.muted,
+                            color: context.appColors.muted,
                             fontSize: 12,
                           ),
                         ),
@@ -679,6 +766,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           ),
                           child: const Text('오픈소스 라이선스'),
                         ),
+                        if (widget.ads.privacyRequired)
+                          TextButton(
+                            onPressed: () async {
+                              final success = await widget.ads.privacyOptions();
+                              if (!success && context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      '광고 개인정보 설정을 열지 못했어요. 다시 시도해 주세요.',
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text('광고 개인정보 설정'),
+                          ),
+                        if (widget.plus.showAds && widget.ads.ready)
+                          SponsorBanner(
+                            key: ValueKey(widget.ads.revision),
+                            ads: widget.ads,
+                          ),
                       ],
                     ],
                   ),
@@ -690,7 +798,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget _stat(String label, int count, String unit) => Column(
     crossAxisAlignment: CrossAxisAlignment.center,
     children: [
-      Text(label, style: const TextStyle(color: AppColors.muted, fontSize: 10)),
+      Text(
+        label,
+        style: TextStyle(color: context.appColors.muted, fontSize: 10),
+      ),
       const SizedBox(height: 6),
       Text.rich(
         TextSpan(
@@ -724,7 +835,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       if (trailing != null)
         Text(
           trailing,
-          style: const TextStyle(fontSize: 11, color: AppColors.muted),
+          style: TextStyle(fontSize: 11, color: context.appColors.muted),
         ),
     ],
   );
@@ -734,20 +845,20 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     decoration: BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(24),
-      border: Border.all(color: AppColors.line),
+      border: Border.all(color: context.appColors.line),
     ),
     child: Column(
       children: [
         Container(
           padding: const EdgeInsets.all(16),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.lime,
+            color: context.appColors.lime,
           ),
-          child: const Icon(
+          child: Icon(
             Icons.done_all_rounded,
             size: 30,
-            color: AppColors.forest,
+            color: context.appColors.forest,
           ),
         ),
         const SizedBox(height: 18),
@@ -759,10 +870,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         Text(
           description,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             height: 1.8,
-            color: AppColors.muted,
+            color: context.appColors.muted,
           ),
         ),
       ],

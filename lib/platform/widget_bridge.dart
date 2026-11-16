@@ -2,12 +2,19 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../models/schedule.dart';
+import '../design/app_skin.dart';
 
 // Android가 앱 종료 후에도 읽을 수 있는 최소 표시 데이터만 전달합니다.
 class WidgetBridge {
   static const channel = MethodChannel('chaengim/widgets');
   static bool get supported =>
       !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  Future<void> syncAppearance(AppPalette colors) async {
+    if (supported) {
+      await channel.invokeMethod<void>('appearance', colors.widgetColors);
+    }
+  }
+
   Future<void> sync(List<Schedule> schedules) async {
     if (!supported) return;
     await channel.invokeMethod<void>(

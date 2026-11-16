@@ -48,9 +48,9 @@ class _WidgetGuideState extends State<WidgetGuide> {
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
               const SizedBox(height: 12),
-              const Text(
+              Text(
                 '앱을 열지 않고 마감일과 남은 준비물을 확인해요.',
-                style: TextStyle(color: AppColors.muted, fontSize: 13),
+                style: TextStyle(color: context.appColors.muted, fontSize: 13),
               ),
               const SizedBox(height: 28),
               SegmentedButton<bool>(
@@ -66,7 +66,7 @@ class _WidgetGuideState extends State<WidgetGuide> {
               Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE7E9E0),
+                  color: context.appColors.soft,
                   borderRadius: BorderRadius.circular(28),
                 ),
                 child: Align(
@@ -76,19 +76,19 @@ class _WidgetGuideState extends State<WidgetGuide> {
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        color: AppColors.forest,
+                        color: context.appColors.forest,
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Row(
+                          Row(
                             children: [
                               Expanded(
                                 child: Text(
                                   '챙김',
                                   style: TextStyle(
-                                    color: AppColors.lime,
+                                    color: context.appColors.lime,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -96,7 +96,7 @@ class _WidgetGuideState extends State<WidgetGuide> {
                               ),
                               Icon(
                                 Icons.add_circle_outline,
-                                color: AppColors.lime,
+                                color: context.appColors.lime,
                                 size: 22,
                               ),
                             ],
@@ -112,10 +112,10 @@ class _WidgetGuideState extends State<WidgetGuide> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            const Text(
+                            Text(
                               '+ 버튼으로 새 일정을 챙겨요',
                               style: TextStyle(
-                                color: Color(0xFFC3D4C9),
+                                color: context.appColors.onForestMuted,
                                 fontSize: 12,
                               ),
                             ),
@@ -131,8 +131,8 @@ class _WidgetGuideState extends State<WidgetGuide> {
                                       children: [
                                         Text(
                                           s.dDay(DateTime.now()),
-                                          style: const TextStyle(
-                                            color: AppColors.lime,
+                                          style: TextStyle(
+                                            color: context.appColors.lime,
                                             fontSize: 21,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -150,8 +150,9 @@ class _WidgetGuideState extends State<WidgetGuide> {
                                         const SizedBox(height: 6),
                                         Text(
                                           '준비물 ${s.remaining}개 남음 · ${s.stage.label}',
-                                          style: const TextStyle(
-                                            color: Color(0xFFC3D4C9),
+                                          style: TextStyle(
+                                            color:
+                                                context.appColors.onForestMuted,
                                             fontSize: 10,
                                           ),
                                         ),
@@ -166,10 +167,10 @@ class _WidgetGuideState extends State<WidgetGuide> {
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
+              Text(
                 '실제 일정 미리보기 · 크기와 글꼴은 홈 앱에 따라 달라질 수 있어요.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10, color: AppColors.muted),
+                style: TextStyle(fontSize: 10, color: context.appColors.muted),
               ),
               const SizedBox(height: 28),
               FilledButton.icon(
@@ -197,10 +198,10 @@ class _WidgetGuideState extends State<WidgetGuide> {
                 subtitle: Text('일정 저장 후 바로 갱신해요. 최종 완료한 일정은 제외돼요.'),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 '추가 창이 나오지 않나요?\n홈 화면의 빈 곳을 길게 누르기 → 위젯 → 챙김 → 소형 또는 중형을 선택하세요.',
                 style: TextStyle(
-                  color: AppColors.muted,
+                  color: context.appColors.muted,
                   fontSize: 12,
                   height: 1.8,
                 ),

@@ -111,17 +111,17 @@ class ScheduleDetail extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.event_outlined,
                       size: 17,
-                      color: AppColors.muted,
+                      color: context.appColors.muted,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       '마감 ${formatDeadline(schedule)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: AppColors.muted,
+                        color: context.appColors.muted,
                       ),
                     ),
                   ],
@@ -132,7 +132,7 @@ class ScheduleDetail extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: AppColors.line),
+                    border: Border.all(color: context.appColors.line),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,9 +160,9 @@ class ScheduleDetail extends StatelessWidget {
                                     : nextReminders.isEmpty
                                     ? '선택한 알림 시각이 지나 예약할 알림이 없어요.'
                                     : '알림 수신 상태는 마이 → 마감 알림에서 확인해요.',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 10,
-                                  color: AppColors.muted,
+                                  color: context.appColors.muted,
                                 ),
                               ),
                             ],
@@ -179,7 +179,7 @@ class ScheduleDetail extends StatelessWidget {
                     horizontal: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFECEFE3),
+                    color: context.appColors.soft,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -194,7 +194,7 @@ class ScheduleDetail extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: stage.index <= schedule.stage.index
-                                        ? AppColors.forest
+                                        ? context.appColors.forest
                                         : Colors.white,
                                   ),
                                   child: Icon(
@@ -205,8 +205,8 @@ class ScheduleDetail extends StatelessWidget {
                                         : Icons.circle_outlined,
                                     size: stage == schedule.stage ? 9 : 16,
                                     color: stage.index <= schedule.stage.index
-                                        ? AppColors.lime
-                                        : AppColors.muted,
+                                        ? context.appColors.lime
+                                        : context.appColors.muted,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -217,9 +217,9 @@ class ScheduleDetail extends StatelessWidget {
                                     '결과 대기',
                                     '최종 완료',
                                   ][stage.index],
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 10,
-                                    color: AppColors.forest,
+                                    color: context.appColors.forest,
                                   ),
                                 ),
                               ],
@@ -252,9 +252,12 @@ class ScheduleDetail extends StatelessWidget {
                         },
                 ),
                 const SizedBox(height: 10),
-                const Text(
+                Text(
                   '준비가 끝나면 실제 제출·처리도 확인해주세요.\n진행 단계는 직접 변경할 수 있어요.',
-                  style: TextStyle(color: AppColors.muted, fontSize: 11),
+                  style: TextStyle(
+                    color: context.appColors.muted,
+                    fontSize: 11,
+                  ),
                 ),
                 const SizedBox(height: 28),
                 Text(
@@ -326,11 +329,14 @@ class ScheduleDetail extends StatelessWidget {
                   ],
                 ),
                 if (children.isEmpty)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: Text(
                       '결과 발표, 추가 서류 제출 같은\n다음 일정을 연결해보세요.',
-                      style: TextStyle(fontSize: 12, color: AppColors.muted),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: context.appColors.muted,
+                      ),
                     ),
                   ),
                 ...children.map(

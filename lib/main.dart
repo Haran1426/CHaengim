@@ -7,6 +7,9 @@ import 'screens/home_screen.dart';
 import 'design/app_theme.dart';
 import 'platform/widget_bridge.dart';
 import 'platform/notification_bridge.dart';
+import 'data/appearance_store.dart';
+import 'data/plus_store.dart';
+import 'platform/ads_controller.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,8 +22,15 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key, this.storage});
+  const MyApp({
+    super.key,
+    this.storage,
+    this.appearanceStorage,
+    this.plusGateway,
+  });
   final ScheduleStorage? storage;
+  final AppearanceStorage? appearanceStorage;
+  final PlusGateway? plusGateway;
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -28,9 +38,20 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late final ScheduleStore store;
   final bridge = WidgetBridge();
+  late final AppearanceStore appearance;
+  late final PlusStore plus;
+  late final AdsController ads;
   @override
   void initState() {
     super.initState();
+    appearance = AppearanceStore(
+      widget.appearanceStorage ?? LocalAppearanceStorage(),
+      syncWidget: widget.storage == null ? bridge.syncAppearance : null,
+    )..load();
+    ads = AdsController(enabled: widget.storage == null);
+    plus = PlusStore(widget.plusGateway ?? RevenueCatGateway());
+    plus.addListener(updatePlus);
+    plus.refresh();
     store = ScheduleStore(
       widget.storage ?? LocalScheduleStorage(),
       onChanged: widget.storage == null ? bridge.sync : null,
@@ -40,21 +61,39 @@ class _MyAppState extends State<MyApp> {
     )..load();
   }
 
+  void updatePlus() {
+    appearance.setPlus(plus.isPlus);
+    if (plus.showAds) ads.initialize();
+  }
+
   @override
   void dispose() {
     store.dispose();
+    plus.removeListener(updatePlus);
+    plus.dispose();
+    appearance.dispose();
+    ads.dispose();
     bridge.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: '챙김',
-    debugShowCheckedModeBanner: false,
-    locale: const Locale('ko'),
-    supportedLocales: const [Locale('ko')],
-    localizationsDelegates: GlobalMaterialLocalizations.delegates,
-    theme: buildAppTheme(),
-    home: HomeScreen(store: store, bridge: bridge),
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: appearance,
+    builder: (context, _) => MaterialApp(
+      title: '챙김',
+      debugShowCheckedModeBanner: false,
+      locale: const Locale('ko'),
+      supportedLocales: const [Locale('ko')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      theme: buildAppTheme(appearance.active),
+      home: HomeScreen(
+        store: store,
+        bridge: bridge,
+        appearance: appearance,
+        plus: plus,
+        ads: ads,
+      ),
+    ),
   );
 }

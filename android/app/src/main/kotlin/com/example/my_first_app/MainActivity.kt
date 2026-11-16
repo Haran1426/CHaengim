@@ -20,6 +20,19 @@ class MainActivity : FlutterActivity() {
         channel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "chaengim/widgets")
         channel?.setMethodCallHandler { call, result ->
             when (call.method) {
+                "appearance" -> {
+                    val colors = call.arguments as? Map<*, *>
+                    val background = (colors?.get("background") as? Number)?.toInt()
+                    val accent = (colors?.get("accent") as? Number)?.toInt()
+                    val secondary = (colors?.get("secondary") as? Number)?.toInt()
+                    if (background == null || accent == null || secondary == null) result.error("invalid", "Missing palette", null)
+                    else {
+                        val saved = getSharedPreferences(ChaengimWidget.DATA_FILE, MODE_PRIVATE).edit()
+                            .putInt("background", background).putInt("accent", accent).putInt("secondary", secondary).commit()
+                        if (saved) { ChaengimWidget.updateAll(this); result.success(null) }
+                        else result.error("save", "Widget theme storage failed", null)
+                    }
+                }
                 "sync" -> {
                     val snapshot = call.arguments as? String
                     if (snapshot == null) result.error("invalid", "Missing snapshot", null)

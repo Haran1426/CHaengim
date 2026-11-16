@@ -71,7 +71,22 @@ object ChaengimWidget {
         val wide = medium && width >= 240
         val layout = if (wide) R.layout.widget_medium else R.layout.widget_small
         val views = RemoteViews(context.packageName, layout)
-        val raw = context.getSharedPreferences(DATA_FILE, Context.MODE_PRIVATE).getString("schedules", "[]")
+        val preferences = context.getSharedPreferences(DATA_FILE, Context.MODE_PRIVATE)
+        val background = preferences.getInt("background", Color.parseColor("#244C3F"))
+        val accent = preferences.getInt("accent", Color.parseColor("#E0EEAC"))
+        val secondary = preferences.getInt("secondary", Color.parseColor("#C3D4C9"))
+        val drawable = when (background) {
+            Color.parseColor("#62503E") -> R.drawable.widget_background_sand
+            Color.parseColor("#284C63") -> R.drawable.widget_background_ocean
+            Color.parseColor("#56436E") -> R.drawable.widget_background_iris
+            Color.parseColor("#7A4A42") -> R.drawable.widget_background_rose
+            else -> R.drawable.widget_background
+        }
+        views.setInt(R.id.widget_root, "setBackgroundResource", drawable)
+        views.setInt(R.id.widget_add, "setBackgroundResource", 0)
+        views.setTextColor(R.id.widget_brand, accent)
+        views.setTextColor(R.id.widget_add, accent)
+        val raw = preferences.getString("schedules", "[]")
         val rows = try { JSONArray(raw) } catch (_: Exception) { JSONArray() }
         views.setOnClickPendingIntent(R.id.widget_add, open(context, "add"))
         views.setOnClickPendingIntent(R.id.widget_root, open(context, "home"))
@@ -81,6 +96,8 @@ object ChaengimWidget {
         val infoIds = intArrayOf(R.id.info_one, R.id.info_two, R.id.info_three)
         val maxRows = if (wide && height < 280) 2 else rowIds.size
         rowIds.forEachIndexed { index, rowId ->
+            views.setTextColor(dayIds[index], accent)
+            views.setTextColor(infoIds[index], secondary)
             if (index >= rows.length() || index >= maxRows) {
                 views.setViewVisibility(rowId, if (index == 0) View.VISIBLE else View.GONE)
                 if (index == 0) {
@@ -97,7 +114,7 @@ object ChaengimWidget {
                 views.setViewVisibility(rowId, View.VISIBLE)
                 views.setTextViewText(titleIds[index], row.getString("title"))
                 views.setTextViewText(dayIds[index], day)
-                views.setTextColor(dayIds[index], Color.parseColor(if (expired) "#FFC2A3" else "#E0EEAC"))
+                views.setTextColor(dayIds[index], if (expired) Color.parseColor("#FFC2A3") else accent)
                 views.setTextViewText(infoIds[index], "준비물 ${row.getInt("remaining")}개 남음 · ${row.getString("stage")}")
                 views.setOnClickPendingIntent(rowId, open(context, "detail:${row.getString("id")}"))
             }
