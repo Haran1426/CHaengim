@@ -12,15 +12,13 @@ import 'schedule_store_test.dart' show MemoryStorage;
 void main() {
   setUpAll(() async {
     // 글꼴 교체로 달라지는 실제 한글 폭과 줄 높이도 검수합니다.
-    final body = FontLoader('Pretendard');
+    final body = FontLoader('NotoSansKR');
     for (final weight in ['Regular', 'Medium', 'SemiBold', 'Bold']) {
       body.addFont(
-        rootBundle.load('assets/fonts/pretendard/Pretendard-$weight.otf'),
+        rootBundle.load('assets/fonts/notosanskr/NotoSansKR-$weight.ttf'),
       );
     }
-    final display = FontLoader('MaruBuri')
-      ..addFont(rootBundle.load('assets/fonts/maruburi/MaruBuri-SemiBold.ttf'));
-    await Future.wait([body.load(), display.load()]);
+    await body.load();
   });
 
   testWidgets('320px 화면과 큰 글씨에서 홈·일정·위젯 가이드가 넘치지 않는다', (tester) async {

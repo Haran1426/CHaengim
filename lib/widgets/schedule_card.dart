@@ -46,7 +46,7 @@ class ScheduleCard extends StatelessWidget {
                       style: TextStyle(
                         color: secondary,
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ),
@@ -88,10 +88,10 @@ class ScheduleCard extends StatelessWidget {
                       ? AppTypography.display
                       : AppTypography.body,
                   color: ink,
-                  fontSize: featured ? 23 : 19,
+                  fontSize: featured ? 22 : 19,
                   height: 1.4,
                   letterSpacing: 0,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: featured ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),

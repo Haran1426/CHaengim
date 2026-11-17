@@ -30,23 +30,23 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
     textTheme: text.copyWith(
       headlineLarge: TextStyle(
         fontFamily: AppTypography.display,
-        fontSize: 32,
+        fontSize: 28,
         height: 1.4,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         letterSpacing: 0,
         color: colors.ink,
       ),
       headlineMedium: TextStyle(
         fontFamily: AppTypography.display,
-        fontSize: 27,
+        fontSize: 24,
         height: 1.4,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         letterSpacing: 0,
         color: colors.ink,
       ),
       titleLarge: text.titleLarge?.copyWith(
         fontSize: 20,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         letterSpacing: 0,
       ),
       titleMedium: text.titleMedium?.copyWith(
@@ -74,8 +74,8 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
       centerTitle: false,
       titleTextStyle: TextStyle(
         fontFamily: AppTypography.display,
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
         letterSpacing: 0,
         color: colors.ink,
       ),
@@ -112,7 +112,7 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(
           fontFamily: AppTypography.body,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
           fontSize: 15,
         ),
       ),

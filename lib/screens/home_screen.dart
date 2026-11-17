@@ -207,9 +207,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                 ['챙김', '내 일정', '마이'][tab],
                 style: const TextStyle(
                   fontFamily: AppTypography.display,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 0,
-                  fontSize: 21,
+                  fontSize: 20,
                 ),
               ),
             ],
@@ -650,8 +650,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             onPressed: () => showLicensePage(
                               context: context,
                               applicationName: '챙김',
-                              applicationVersion: '1.0.4',
-                              applicationLegalese: 'MaruBuri · Pretendard\nSIL Open Font License 1.1',
+                              applicationVersion: '1.0.5',
+                              applicationLegalese:
+                                  'Noto Sans KR\nSIL Open Font License 1.1',
                             ),
                             child: const Text('오픈소스 라이선스'),
                           ),
@@ -693,7 +694,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           title,
           style: const TextStyle(
             fontSize: 17,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             letterSpacing: 0,
           ),
         ),

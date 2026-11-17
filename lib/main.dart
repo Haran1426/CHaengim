@@ -15,11 +15,8 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks([
-      'MaruBuri',
-    ], await rootBundle.loadString('assets/fonts/maruburi/OFL.txt'));
-    yield LicenseEntryWithLineBreaks([
-      'Pretendard',
-    ], await rootBundle.loadString('assets/fonts/pretendard/OFL.txt'));
+      'Noto Sans KR',
+    ], await rootBundle.loadString('assets/fonts/notosanskr/OFL.txt'));
   });
   runApp(const MyApp());
 }

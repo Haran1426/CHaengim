@@ -5,12 +5,12 @@
 [Things](https://culturedcode.com/things/)의 여백, 단계별 정보 강조, 해야 할 일에 집중하는 목록 구성을 참고합니다. 화면을 복제하지 않고, 챙김의 마감·준비·제출·결과 대기 흐름에 맞춰 재구성했습니다.
 
 - 종이빛 바탕 `#F6F4EF`, 짙은 초록 `#244C3F`, 연두 `#E0EEAC`
-- 큰 제목은 MaruBuri 600, 본문·버튼·숫자는 Pretendard 400/500/600/700. 앱에 포함해 오프라인에서도 같은 글꼴 사용
+- 제목·본문·버튼·숫자를 Noto Sans KR 400/500/600/700으로 통일. 앱에 포함해 오프라인에서도 같은 글꼴 사용
 - 제목·마감·남은 준비물이 먼저 보이도록 배치. 핵심 화면의 본문·안내는 14px 이상으로 유지하고 보조 글씨의 대비도 확보
 - 같은 정보를 문장·숫자·진행 설명으로 반복하지 않기. 홍보 문구와 내용 없는 구역은 홈에서 표시하지 않기
 - 의미가 같은 요소는 같은 색·간격·둥근 모서리 사용
 
-폰트 출처와 조건: [마루부리 공식 소개](https://m-hangeul.naver.com/font/detail/maru-buri), [네이버 라이선스 안내](https://help.naver.com/service/30016/contents/18088?lang=ko&osType=PC), [Pretendard 공식 저장소](https://github.com/orioncactus/pretendard). SIL Open Font License 1.1 원문을 앱의 오픈소스 라이선스에도 표시합니다. 배포 파일과 해시는 [폰트 자산 기록](../assets/fonts/README.md)을 참고하세요.
+폰트 출처와 조건: [Google Fonts의 Noto Sans KR](https://fonts.google.com/noto/specimen/Noto+Sans+KR), [공식 라이선스](https://github.com/google/fonts/blob/main/ofl/notosanskr/OFL.txt). SIL Open Font License 1.1 원문을 앱의 오픈소스 라이선스에도 표시합니다. 배포 파일과 해시는 [폰트 자산 기록](../assets/fonts/README.md)을 참고하세요.
 
 ## 화면 순서
 
@@ -80,3 +80,12 @@ flutter build apk --debug -t tool/preview.dart --android-project-arg=chaengimPre
 - 폰트를 원본 파일로 앱에 포함해 네트워크에 의존하지 않습니다. 두 글꼴의 저작권 고지·라이선스 전문을 포함하고 앱의 라이선스 화면에도 등록했습니다.
 - 정적 분석 지적 사항 0건, Flutter 테스트 43개 통과. 기존 320px·글자 1.6배 검사는 실제 한글 폰트를 로드해 수행합니다.
 - 별도 검수용 앱에서 [홈](screenshots/home-typography.png)·[상세](screenshots/detail-typography.png)와 [Android 큰 글씨 설정](screenshots/home-typography-large.png)을 확인했습니다. 일반 설치용 APK는 예시 데이터를 넣지 않은 기본 진입점으로 다시 빌드합니다.
+
+## 1.0.5 라이드 앱 화면을 참고한 고딕체
+
+- 사용자가 지정한 [라이드](https://ride.bz/) 모바일 앱의 차량비 수납 관리 이미지를 기준으로 제목·본문의 굵기 차이를 맞췄습니다.
+- 라이드 공개 PC 앱의 [FontManifest.json](https://pc.ride.bz/assets/FontManifest.json)에서 Noto Sans KR 400/500/700을 확인했습니다. 모바일 앱의 내부 글꼴명은 스크린샷만으로 확정하지 않았습니다.
+- 앱 글꼴을 Noto Sans KR로 통일하고, 큰 제목은 28px/24px Bold, 대표 일정은 22px Bold로 조정했습니다. 본문 16px Regular·줄 높이 1.5와 운영체제 글자 크기 설정을 유지합니다.
+- Google Fonts에서 배포하는 원본 TTF와 OFL 1.1 라이선스를 앱에 포함합니다. 사용하지 않는 이전 글꼴 자산은 제거했습니다.
+- 정적 분석 지적 사항 0건, Flutter 테스트 43개 통과. 320px·글자 1.6배 검사는 실제 Noto Sans KR을 로드해 수행했습니다.
+- 별도 검수용 앱에서 [홈](screenshots/home-noto.png)·[상세](screenshots/detail-noto.png)와 [큰 글씨 설정](screenshots/home-noto-large.png)을 확인했습니다. 일반 배포 APK는 예시 데이터를 넣지 않은 기본 진입점으로 빌드합니다.
