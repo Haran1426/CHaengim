@@ -43,6 +43,12 @@ Android 작업만 진행하면서 Windows 플러그인 준비 단계에 막힌 �
 
 참고: [Flutter 공식 이전 가이드](https://docs.flutter.dev/release/breaking-changes/material-ui-and-cupertino-ui).
 
+## 에뮬레이터를 실행할 수 없는 경우
+
+Windows에서 `x86_64 emulation currently requires hardware acceleration`이 나오면 Android Emulator의 가속 환경을 확인해야 합니다. 2026-11-17 이 PC에서는 가속 드라이버 부재로 에뮬레이터 시작이 중단됐습니다. 이 상태에서 APK 생성 성공과 기기 실행 검증은 구분합니다.
+
+설정 방법은 [Android 공식 가속 환경 안내](https://developer.android.com/studio/run/emulator-acceleration#vm-windows)를 참고하세요. 연결한 실제 Android 기기로도 실행을 확인할 수 있습니다.
+
 ## 2026-11-17 검증
 
 - Windows / Flutter 3.50.0 / Dart 3.14.0에서 코드 검사 지적 사항 0건.
@@ -50,3 +56,5 @@ Android 작업만 진행하면서 Windows 플러그인 준비 단계에 막힌 �
 - Android 알림 계산 단위 테스트 8개 통과.
 - 일반 앱 디버그 APK 생성 성공. 이번 작업에서는 기기에 설치해 실행하지 않았습니다.
 - Android 빌드에는 일부 플러그인의 Java 및 Gradle 사용 중단 안내가 남아 있습니다. 현재 빌드를 막지는 않지만 Gradle 10으로 올리기 전 플러그인 호환성을 확인해야 합니다.
+
+같은 날 일정 저장소의 종료 시점 오류를 수정한 뒤 Flutter 테스트 28개와 코드 검사를 통과했고 일반 앱 APK를 다시 생성했습니다. 로딩·저장 중 종료를 재현하는 테스트를 포함하며, 에뮬레이터 실행은 위의 가속 환경 문제로 확인하지 못했습니다.

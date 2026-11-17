@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_first_app/data/schedule_store.dart';
@@ -29,7 +30,60 @@ Schedule example() => Schedule(
   items: const [Preparation(title: '증명서')],
 );
 
+class DelayedStorage extends MemoryStorage {
+  Completer<List<Schedule>>? pendingLoad;
+  Completer<void>? pendingSave;
+
+  @override
+  Future<List<Schedule>> load() => pendingLoad?.future ?? super.load();
+
+  @override
+  Future<void> save(List<Schedule> schedules) async {
+    await pendingSave?.future;
+    await super.save(schedules);
+  }
+}
+
 void main() {
+  test('로딩 중 종료해도 늦게 도착한 결과가 종료된 저장소에 알리지 않는다', () async {
+    final storage = DelayedStorage()
+      ..pendingLoad = Completer<List<Schedule>>();
+    final store = ScheduleStore(storage);
+    final loading = store.load();
+    store.dispose();
+    storage.pendingLoad!.complete([example()]);
+    await expectLater(loading, completes);
+  });
+
+  test('저장 중 종료해도 저장과 위젯·알림 동기화를 끝낸다', () async {
+    final storage = DelayedStorage();
+    var widgetSyncs = 0, reminderSyncs = 0;
+    final store = ScheduleStore(
+      storage,
+      onChanged: (_) async => widgetSyncs++,
+      onRemindersChanged: (_) async => reminderSyncs++,
+    );
+    await store.load();
+    widgetSyncs = reminderSyncs = 0;
+    storage.pendingSave = Completer<void>();
+    final saving = store.put(example());
+    store.dispose();
+    storage.pendingSave!.complete();
+    await expectLater(saving, completes);
+    expect((await storage.load()).single.id, '1');
+    expect(widgetSyncs, 1);
+    expect(reminderSyncs, 1);
+  });
+
+  test('종료된 저장소에는 새 저장 요청을 받지 않는다', () async {
+    final storage = MemoryStorage();
+    final store = ScheduleStore(storage);
+    await store.load();
+    store.dispose();
+    await expectLater(store.put(example()), throwsStateError);
+    expect(await storage.load(), isEmpty);
+  });
+
   test('저장 후 새로운 저장소에서 준비물과 진행 단계를 복원한다', () async {
     final storage = MemoryStorage();
     final store = ScheduleStore(storage);

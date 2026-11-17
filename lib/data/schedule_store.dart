@@ -40,12 +40,18 @@ class ScheduleStore extends ChangeNotifier {
   List<Schedule> _schedules = [];
   bool loading = true;
   bool saving = false;
+  bool _disposed = false;
   String? loadError;
   List<Schedule> get schedules => List.unmodifiable(_schedules);
+  void _notify() {
+    if (!_disposed) notifyListeners();
+  }
+
   Future<void> load() async {
+    if (_disposed) return;
     loading = true;
     loadError = null;
-    notifyListeners();
+    _notify();
     try {
       _schedules = await storage.load();
       await syncWidget();
@@ -54,7 +60,7 @@ class ScheduleStore extends ChangeNotifier {
       loadError = '일정을 불러오지 못했어요. 다시 시도해 주세요.';
     }
     loading = false;
-    notifyListeners();
+    _notify();
   }
 
   Future<void> put(Schedule schedule) async {
@@ -71,19 +77,20 @@ class ScheduleStore extends ChangeNotifier {
   Future<void> remove(String id) =>
       _commit(_schedules.where((item) => item.id != id).toList());
   Future<void> _commit(List<Schedule> next) async {
-    if (loading || loadError != null || saving) {
+    if (_disposed || loading || loadError != null || saving) {
       throw StateError('저장소가 준비되지 않았습니다.');
     }
     saving = true;
-    notifyListeners();
+    _notify();
     try {
+      // 화면이 종료돼도 시작한 저장과 Android 동기화는 끝까지 마칩니다.
       await storage.save(next);
       _schedules = next;
       await syncWidget();
       await syncReminders();
     } finally {
       saving = false;
-      notifyListeners();
+      _notify();
     }
   }
 
@@ -105,5 +112,11 @@ class ScheduleStore extends ChangeNotifier {
     }
   }
 
-  void refreshClock() => notifyListeners();
+  void refreshClock() => _notify();
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
 }
