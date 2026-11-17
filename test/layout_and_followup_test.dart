@@ -4,8 +4,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_first_app/main.dart';
+import 'package:my_first_app/design/app_theme.dart';
 import 'package:my_first_app/models/schedule.dart';
 import 'package:my_first_app/widgets/schedule_card.dart';
+import 'package:my_first_app/widgets/week_overview.dart';
 
 import 'schedule_store_test.dart' show MemoryStorage;
 
@@ -52,6 +54,148 @@ void main() {
     await tester.tap(find.byTooltip('위젯 가이드'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), null);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(
+      MyApp(
+        storage: MemoryStorage(),
+        appearanceStorage: MemoryAppearanceStorage(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('quick-add-시험·자격증')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), null);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('홈 날짜로 미완료 마감을 찾고 날짜 필터를 해제한다', (tester) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final other = DateTime(
+      now.year,
+      now.month,
+      now.day + (now.weekday == 7 ? -1 : 1),
+    );
+    final storage = MemoryStorage();
+    await storage.save([
+      Schedule(id: 'today', title: '선택한 날 일정', deadline: today),
+      Schedule(id: 'other', title: '다른 날 일정', deadline: other),
+      Schedule(
+        id: 'completed',
+        title: '완료된 일정',
+        deadline: today,
+        stage: ScheduleStage.completed,
+      ),
+    ]);
+    await tester.pumpWidget(
+      MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('마감 2건'), findsOneWidget);
+    await tester.tap(
+      find.byKey(ValueKey('week-day-${now.year}-${now.month}-${now.day}')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('deadline-day-filter')), findsOneWidget);
+    expect(find.text('선택한 날 일정'), findsOneWidget);
+    expect(find.text('다른 날 일정'), findsNothing);
+    expect(find.text('완료된 일정'), findsNothing);
+    await tester.tap(find.byTooltip('날짜 필터 해제'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('deadline-day-filter')), findsNothing);
+    expect(find.text('선택한 날 일정'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('다른 날 일정'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('다른 날 일정'), findsOneWidget);
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('주간 마감은 월 경계를 넘고 완료 일정과 다음 주를 제외한다', (tester) async {
+    DateTime? selected;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildAppTheme(),
+        home: Scaffold(
+          body: WeekOverview(
+            today: DateTime(2026, 12, 1),
+            schedules: [
+              Schedule(
+                id: 'monday',
+                title: '월요일',
+                deadline: DateTime(2026, 11, 30),
+              ),
+              Schedule(
+                id: 'sunday',
+                title: '일요일',
+                deadline: DateTime(2026, 12, 6),
+              ),
+              Schedule(
+                id: 'next',
+                title: '다음 주',
+                deadline: DateTime(2026, 12, 7),
+              ),
+              Schedule(
+                id: 'done',
+                title: '완료',
+                deadline: DateTime(2026, 12, 1),
+                stage: ScheduleStage.completed,
+              ),
+            ],
+            onSelected: (day) => selected = day,
+          ),
+        ),
+      ),
+    );
+    expect(find.text('마감 2건'), findsOneWidget);
+    expect(find.byKey(const ValueKey('week-day-2026-11-30')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('week-day-2026-12-6')));
+    expect(selected, DateTime(2026, 12, 6));
+    expect(find.bySemanticsLabel('12월 6일 일요일, 미완료 마감 1건'), findsOneWidget);
+  });
+
+  testWidgets('빈 홈의 빠른 추가에서 선택한 카테고리로 저장한다', (tester) async {
+    final storage = MemoryStorage();
+    await tester.pumpWidget(
+      MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
+    );
+    await tester.pumpAndSettle();
+    final shortcut = find.byKey(const ValueKey('quick-add-시험·자격증'));
+    await tester.scrollUntilVisible(
+      shortcut,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(shortcut);
+    await tester.pumpAndSettle();
+    final dropdown = tester.widget<DropdownButtonFormField<String>>(
+      find.byType(DropdownButtonFormField<String>),
+    );
+    expect(dropdown.initialValue, '시험·자격증');
+    expect(await storage.load(), isEmpty);
+    await tester.enterText(
+      find.widgetWithText(TextFormField, '일정 제목'),
+      '시험 접수',
+    );
+    await tester.scrollUntilVisible(
+      find.text('저장하기'),
+      300,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('저장하기'));
+    await tester.pumpAndSettle();
+    final saved = await storage.load();
+    expect(saved, hasLength(1));
+    expect(saved.single.category, '시험·자격증');
+    expect(saved.single.title, '시험 접수');
     await tester.pumpWidget(const SizedBox());
   });
 

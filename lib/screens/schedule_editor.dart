@@ -12,10 +12,12 @@ class ScheduleEditor extends StatefulWidget {
     required this.store,
     this.initial,
     this.followUpTo,
+    this.initialCategory,
   });
   final ScheduleStore store;
   final Schedule? initial;
   final Schedule? followUpTo;
+  final String? initialCategory;
   @override
   State<ScheduleEditor> createState() => _ScheduleEditorState();
 }
@@ -50,7 +52,11 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
     date = initial?.deadline ?? DateTime.now();
     time = initial?.hasTime == true ? TimeOfDay.fromDateTime(date) : null;
     category =
-        initial?.category ?? widget.followUpTo?.category ?? categories.first;
+        initial?.category ??
+        widget.followUpTo?.category ??
+        (categories.contains(widget.initialCategory)
+            ? widget.initialCategory!
+            : categories.first);
     items = [...?initial?.items];
     reminderDays = (initial?.reminderDays ?? [1]).toSet();
     reminderTime = TimeOfDay(
