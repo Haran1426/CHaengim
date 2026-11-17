@@ -1,7 +1,37 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+val storeBuild = providers.gradleProperty("chaengimStoreRelease").orNull == "true" ||
+    gradle.startParameter.taskNames.any {
+        it.substringAfterLast(':').startsWith("bundle", ignoreCase = true) &&
+            it.endsWith("Release", ignoreCase = true)
+    }
+val publishedApplicationId = providers.gradleProperty("chaengimApplicationId")
+    .getOrElse("com.example.my_first_app")
+val previewBuild = providers.gradleProperty("chaengimPreview").orNull == "true"
+val uploadProperties = Properties()
+if (storeBuild) {
+    require(!previewBuild) { "Store builds cannot use preview data." }
+    require(
+        publishedApplicationId.matches(Regex("[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+")) &&
+            !publishedApplicationId.startsWith("com.example.")
+    ) { "Set a permanent chaengimApplicationId before building for a store." }
+    val keyFile = rootProject.file("key.properties")
+    require(keyFile.isFile) { "Store builds require android/key.properties and an upload keystore." }
+    keyFile.inputStream().use { uploadProperties.load(it) }
+    for (name in listOf("storeFile", "storePassword", "keyAlias", "keyPassword")) {
+        require(!uploadProperties.getProperty(name).isNullOrBlank()) {
+            "Missing signing setting: $name"
+        }
+    }
+    require(rootProject.file(uploadProperties.getProperty("storeFile")).isFile) {
+        "Upload keystore file not found."
+    }
 }
 
 android {
@@ -15,9 +45,8 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = if (providers.gradleProperty("chaengimPreview").orNull == "true")
-            "com.example.my_first_app.preview" else "com.example.my_first_app"
+        applicationId = if (previewBuild)
+            "$publishedApplicationId.preview" else publishedApplicationId
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -29,11 +58,21 @@ android {
             .getOrElse("ca-app-pub-3940256099942544~3347511713")
     }
 
+    signingConfigs {
+        if (storeBuild) {
+            create("upload") {
+                storeFile = rootProject.file(uploadProperties.getProperty("storeFile"))
+                storePassword = uploadProperties.getProperty("storePassword")
+                keyAlias = uploadProperties.getProperty("keyAlias")
+                keyPassword = uploadProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            // APKs for local testing retain their existing signature and data.
+            signingConfig = signingConfigs.getByName(if (storeBuild) "upload" else "debug")
         }
     }
 }

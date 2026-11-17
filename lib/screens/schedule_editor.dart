@@ -117,6 +117,7 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
     );
     try {
       await widget.store.put(schedule);
+      if (!mounted) return;
       String? message;
       if (reminderTimes(schedule, DateTime.now()).isNotEmpty) {
         try {

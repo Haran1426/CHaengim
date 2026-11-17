@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
@@ -73,9 +75,8 @@ class RevenueCatGateway implements PlusGateway {
   Future<bool> buy() async {
     if (_package == null) throw StateError('상품이 준비되지 않았습니다.');
     return _isPlus(
-      (await Purchases.purchase(
-        PurchaseParams.package(_package!),
-      )).customerInfo,
+      (await Purchases.purchase(PurchaseParams.package(_package!)))
+          .customerInfo,
     );
   }
 
@@ -90,10 +91,13 @@ class RevenueCatGateway implements PlusGateway {
 }
 
 class PlusStore extends ChangeNotifier {
-  PlusStore(this.gateway);
+  PlusStore(this.gateway, {this.requestTimeout = const Duration(seconds: 15)});
   final PlusGateway gateway;
+  final Duration requestTimeout;
   bool isPlus = false, loading = true, busy = false, resolved = false;
-  bool _initialized = false, _disposed = false, _refreshing = false;
+  bool _initialized = false, _disposed = false;
+  Future<void>? _refreshOperation, _initialization;
+  int _entitlementRevision = 0;
   PlusOffer? offer;
   String? message;
   bool get configured => gateway.configured;
@@ -106,14 +110,33 @@ class PlusStore extends ChangeNotifier {
   }
 
   void _update(bool value) {
+    if (_disposed) return;
+    _entitlementRevision++;
     isPlus = value;
     resolved = true;
     _notify();
   }
 
-  Future<void> refresh() async {
-    if (busy || _refreshing) return;
-    _refreshing = true;
+  Future<void> refresh() {
+    if (_disposed || busy) return Future<void>.value();
+    return _refreshOperation ??= _refresh().whenComplete(
+      () => _refreshOperation = null,
+    );
+  }
+
+  Future<void> _ensureInitialized() async {
+    if (_initialized) return;
+    _initialization ??= gateway
+        .initialize(_update)
+        .then((_) {
+          _initialized = true;
+          if (_disposed) gateway.dispose();
+        })
+        .whenComplete(() => _initialization = null);
+    await _initialization!.timeout(requestTimeout);
+  }
+
+  Future<void> _refresh() async {
     loading = true;
     message = null;
     _notify();
@@ -122,21 +145,20 @@ class PlusStore extends ChangeNotifier {
         resolved = true;
         return;
       }
-      if (!_initialized) {
-        await gateway.initialize(_update);
-        _initialized = true;
-        if (_disposed) {
-          gateway.dispose();
-          return;
-        }
-      }
-      _update(await gateway.refresh());
-      offer = await gateway.offer();
+      await _ensureInitialized();
+      if (_disposed) return;
+      final revision = _entitlementRevision;
+      final active = await gateway.refresh().timeout(requestTimeout);
+      if (_disposed) return;
+      if (revision == _entitlementRevision) _update(active);
+      final fetchedOffer = await gateway.offer().timeout(requestTimeout);
+      if (!_disposed) offer = fetchedOffer;
+    } on TimeoutException {
+      message = '스토어 응답이 늦어지고 있어요. 연결을 확인하고 다시 시도해 주세요.';
     } catch (_) {
       message = '스토어에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.';
     } finally {
       loading = false;
-      _refreshing = false;
       _notify();
     }
   }
@@ -144,7 +166,9 @@ class PlusStore extends ChangeNotifier {
   Future<void> purchase() => _transact(false);
   Future<void> restore() => _transact(true);
   Future<void> _transact(bool restore) async {
-    if (busy || loading || !configured || (!restore && !canBuy)) return;
+    if (_disposed || busy || loading || !configured || (!restore && !canBuy)) {
+      return;
+    }
     busy = true;
     message = null;
     _notify();

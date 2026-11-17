@@ -1,4 +1,5 @@
 import 'support/commerce_fakes.dart' show MemoryAppearanceStorage;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,10 +8,26 @@ import 'package:my_first_app/models/schedule.dart';
 import 'package:my_first_app/platform/notification_bridge.dart';
 import 'package:my_first_app/screens/notification_settings.dart';
 import 'package:my_first_app/widgets/schedule_card.dart';
+
 import 'schedule_store_test.dart' show MemoryStorage;
 
 void main() {
   testWidgets('일정 수정에서 선택한 알림 날짜를 저장한다', (tester) async {
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      NotificationBridge.channel,
+      (_) async => {
+        'allowed': true,
+        'enabled': true,
+        'asked': true,
+        'pending': 3,
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        NotificationBridge.channel,
+        null,
+      ),
+    );
     final storage = MemoryStorage();
     await storage.save([
       Schedule(

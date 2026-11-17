@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
+
 import '../data/schedule_store.dart';
 import '../design/app_theme.dart';
 import '../models/schedule.dart';
@@ -45,9 +47,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     widget.store.addListener(flushRoute);
     widget.bridge.listen(openRoute);
-    widget.bridge.initialRoute().then((route) {
-      if (route != null && mounted) openRoute(route);
-    });
+    widget.bridge
+        .initialRoute()
+        .then((route) {
+          if (route != null && mounted) openRoute(route);
+        })
+        .catchError((Object _) {});
     timer = Timer.periodic(const Duration(minutes: 1), (_) {
       if (mounted) widget.store.refreshClock();
     });
@@ -82,9 +87,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
           );
         } else {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('이 일정은 삭제되었어요.')));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text('이 일정은 삭제되었어요.')));
         }
       }
     });
@@ -137,6 +141,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     context,
     MaterialPageRoute<void>(builder: (_) => const NotificationSettings()),
   );
+
+  Future<void> refresh() async {
+    unawaited(widget.plus.refresh());
+    unawaited(widget.appearance.retry());
+    await widget.store.load();
+  }
 
   @override
   Widget build(BuildContext context) => ListenableBuilder(
@@ -248,9 +258,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
-        body: store.loading
+        body: store.loading && !store.hasLoaded
             ? const Center(child: CircularProgressIndicator())
-            : store.loadError != null
+            : store.loadError != null && !store.hasLoaded
             ? Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -264,531 +274,566 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   ],
                 ),
               )
-            : Align(
-                alignment: Alignment.topCenter,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 640),
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 110),
-                    children: [
-                      if (store.widgetError != null) ...[
-                        TextButton.icon(
-                          onPressed: () async {
-                            await store.syncWidget();
-                            if (mounted) setState(() {});
-                          },
-                          icon: const Icon(Icons.sync_problem),
-                          label: Text('${store.widgetError} 다시 시도'),
-                        ),
-                      ],
-                      if (store.reminderError != null)
-                        TextButton.icon(
-                          onPressed: () async {
-                            await store.syncReminders();
-                            if (mounted) setState(() {});
-                          },
-                          icon: const Icon(Icons.notifications_off_outlined),
-                          label: Text('${store.reminderError} 다시 시도'),
-                        ),
-                      if (tab == 0) ...[
-                        Text(
-                          '${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')}  ${['월', '화', '수', '목', '금', '토', '일'][now.weekday - 1]}요일',
-                          style: TextStyle(
-                            color: context.appColors.muted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          '오늘의 챙김',
-                          style: Theme.of(context).textTheme.headlineLarge,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '하나씩 준비하고, 가볍게 마무리해요.',
-                          style: TextStyle(
-                            color: context.appColors.muted,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 26),
-                        if (active.isNotEmpty)
-                          ScheduleCard(
-                            schedule: active.first,
-                            featured: true,
-                            onTap: () => detail(active.first),
-                          )
-                        else
-                          _empty(
-                            '지금 챙길 일정이 없어요',
-                            '새 일정을 등록하고\n필요한 준비물을 하나씩 챙겨보세요.',
-                          ),
-                        const SizedBox(height: 22),
-                        Row(
-                          children: [
-                            Expanded(child: _stat('챙길 일정', active.length, '개')),
-                            Container(
-                              height: 30,
-                              width: 1,
-                              color: context.appColors.line,
-                            ),
-                            Expanded(
-                              child: _stat('남은 준비물', preparations.length, '개'),
-                            ),
-                            Container(
-                              height: 30,
-                              width: 1,
-                              color: context.appColors.line,
-                            ),
-                            Expanded(
-                              child: _stat(
-                                '7일 내 마감',
-                                active
-                                    .where(
-                                      (s) =>
-                                          s.daysLeft(now) >= 0 &&
-                                          s.daysLeft(now) <= 7,
-                                    )
-                                    .length,
-                                '개',
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 30),
-                        _section('지금 준비할 일', '${preparations.length}개 남음'),
-                        const SizedBox(height: 14),
-                        if (preparations.isEmpty)
-                          Container(
-                            padding: const EdgeInsets.all(22),
-                            decoration: BoxDecoration(
-                              color: context.appColors.soft,
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Text(
-                              active.isEmpty
-                                  ? '일정을 추가하면 준비할 일을 모아드려요.'
-                                  : '등록한 준비물은 모두 챙겼어요.\n실제 제출·처리도 마쳤는지 확인해보세요.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: context.appColors.muted,
-                              ),
-                            ),
-                          )
-                        else
-                          Card(
-                            child: Column(
-                              children: preparations
-                                  .take(3)
-                                  .map(
-                                    (entry) => CheckboxListTile(
-                                      value: false,
-                                      controlAffinity:
-                                          ListTileControlAffinity.leading,
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 5,
-                                          ),
-                                      title: Text(
-                                        entry.schedule.items[entry.index].title,
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      subtitle: Text(
-                                        entry.schedule.title,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: context.appColors.muted,
-                                        ),
-                                      ),
-                                      secondary: IconButton(
-                                        tooltip: '일정 상세',
-                                        icon: const Icon(
-                                          Icons.north_east_rounded,
-                                          size: 17,
-                                        ),
-                                        onPressed: () => detail(entry.schedule),
-                                      ),
-                                      onChanged: store.saving
-                                          ? null
-                                          : (_) async {
-                                              final items = [
-                                                ...entry.schedule.items,
-                                              ];
-                                              items[entry.index] = Preparation(
-                                                title: items[entry.index].title,
-                                                done: true,
-                                              );
-                                              try {
-                                                await store.put(
-                                                  entry.schedule.copyWith(
-                                                    items: items,
-                                                  ),
-                                                );
-                                              } catch (_) {
-                                                if (context.mounted) {
-                                                  ScaffoldMessenger.of(
-                                                    context,
-                                                  ).showSnackBar(
-                                                    const SnackBar(
-                                                      content: Text(
-                                                        '체크를 저장하지 못했어요.',
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                              }
-                                            },
-                                    ),
-                                  )
-                                  .toList(),
+            : RefreshIndicator(
+                onRefresh: refresh,
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 640),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 110),
+                      children: [
+                        if (store.loading) ...[
+                          const LinearProgressIndicator(),
+                          const SizedBox(height: 12),
+                        ],
+                        if (store.loadError != null) ...[
+                          const Text('새로 불러오지 못해 마지막으로 확인한 일정을 보여드려요.'),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed: store.load,
+                              icon: const Icon(Icons.refresh),
+                              label: const Text('다시 불러오기'),
                             ),
                           ),
-                        const SizedBox(height: 30),
-                        Row(
-                          children: [
-                            Expanded(child: _section('다가오는 일정', null)),
-                            TextButton(
-                              onPressed: () => setState(() => tab = 1),
-                              child: const Text(
-                                '전체 보기',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        if (active.length > 1)
-                          ...active
-                              .skip(1)
-                              .take(3)
-                              .map(
-                                (s) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: ScheduleCard(
-                                    schedule: s,
-                                    onTap: () => detail(s),
-                                  ),
-                                ),
-                              )
-                        else
+                          const SizedBox(height: 12),
+                        ],
+                        if (store.widgetError != null) ...[
+                          TextButton.icon(
+                            onPressed: () async {
+                              await store.syncWidget();
+                              if (mounted) setState(() {});
+                            },
+                            icon: const Icon(Icons.sync_problem),
+                            label: Text('${store.widgetError} 다시 시도'),
+                          ),
+                        ],
+                        if (store.reminderError != null)
+                          TextButton.icon(
+                            onPressed: () async {
+                              await store.syncReminders();
+                              if (mounted) setState(() {});
+                            },
+                            icon: const Icon(Icons.notifications_off_outlined),
+                            label: Text('${store.reminderError} 다시 시도'),
+                          ),
+                        if (tab == 0) ...[
                           Text(
-                            '다가오는 일정은 여기에 모아드려요.',
+                            '${now.month.toString().padLeft(2, '0')}.${now.day.toString().padLeft(2, '0')}  ${['월', '화', '수', '목', '금', '토', '일'][now.weekday - 1]}요일',
+                            style: TextStyle(
+                              color: context.appColors.muted,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            '오늘의 챙김',
+                            style: Theme.of(context).textTheme.headlineLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '하나씩 준비하고, 가볍게 마무리해요.',
                             style: TextStyle(
                               color: context.appColors.muted,
                               fontSize: 13,
                             ),
                           ),
-                        const SizedBox(height: 14),
-                        InkWell(
-                          onTap: guide,
-                          borderRadius: BorderRadius.circular(18),
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: context.appColors.line),
-                              borderRadius: BorderRadius.circular(18),
+                          const SizedBox(height: 26),
+                          if (active.isNotEmpty)
+                            ScheduleCard(
+                              schedule: active.first,
+                              featured: true,
+                              onTap: () => detail(active.first),
+                            )
+                          else
+                            _empty(
+                              '지금 챙길 일정이 없어요',
+                              '새 일정을 등록하고\n필요한 준비물을 하나씩 챙겨보세요.',
                             ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.widgets_outlined,
-                                  color: context.appColors.forest,
-                                ),
-                                SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    '앱을 열지 않아도, 위젯으로 챙겨요',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Icon(Icons.chevron_right, size: 18),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                      if (tab == 1) ...[
-                        Text(
-                          '모든 일정을\n한곳에 차곡차곡.',
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                        const SizedBox(height: 22),
-                        TextField(
-                          onChanged: (value) => setState(() => query = value),
-                          decoration: const InputDecoration(
-                            hintText: '제목, 메모로 검색',
-                            prefixIcon: Icon(Icons.search_rounded),
-                          ),
-                        ),
-                        const SizedBox(height: 18),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Wrap(
-                                spacing: 7,
-                                children: ['진행 중', '전체', '완료']
-                                    .map(
-                                      (value) => ChoiceChip(
-                                        label: Text(value),
-                                        selected: filter == value,
-                                        onSelected: (_) =>
-                                            setState(() => filter = value),
-                                      ),
-                                    )
-                                    .toList(),
-                              ),
-                            ),
-                            PopupMenuButton<String>(
-                              tooltip: '기간 필터',
-                              initialValue: period,
-                              onSelected: (value) =>
-                                  setState(() => period = value),
-                              itemBuilder: (_) => ['전체 기간', '7일 이내']
-                                  .map(
-                                    (v) =>
-                                        PopupMenuItem(value: v, child: Text(v)),
-                                  )
-                                  .toList(),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Text(
-                                  '$period ▾',
-                                  style: const TextStyle(fontSize: 11),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: ['전체', ...categories]
-                                .map(
-                                  (value) => Padding(
-                                    padding: const EdgeInsets.only(right: 7),
-                                    child: FilterChip(
-                                      label: Text(
-                                        value,
-                                        style: const TextStyle(fontSize: 11),
-                                      ),
-                                      selected: category == value,
-                                      onSelected: (_) =>
-                                          setState(() => category = value),
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _section('일정 목록', '${visible.length}개'),
-                        const SizedBox(height: 14),
-                        if (visible.isEmpty)
-                          _empty('표시할 일정이 없어요', '새 일정을 추가하거나 검색 조건을 바꿔보세요.')
-                        else
-                          ...visible.map(
-                            (s) => Padding(
-                              padding: const EdgeInsets.only(bottom: 14),
-                              child: ScheduleCard(
-                                schedule: s,
-                                onTap: () => detail(s),
-                              ),
-                            ),
-                          ),
-                      ],
-                      if (tab == 2) ...[
-                        Text(
-                          '나를 위한\n작은 챙김.',
-                          style: Theme.of(context).textTheme.headlineLarge,
-                        ),
-                        const SizedBox(height: 24),
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: context.appColors.lime,
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Row(
+                          const SizedBox(height: 22),
+                          Row(
                             children: [
                               Expanded(
+                                child: _stat('챙길 일정', active.length, '개'),
+                              ),
+                              Container(
+                                height: 30,
+                                width: 1,
+                                color: context.appColors.line,
+                              ),
+                              Expanded(
                                 child: _stat(
-                                  '전체 일정',
-                                  store.schedules.length,
+                                  '남은 준비물',
+                                  preparations.length,
                                   '개',
                                 ),
                               ),
+                              Container(
+                                height: 30,
+                                width: 1,
+                                color: context.appColors.line,
+                              ),
                               Expanded(
                                 child: _stat(
-                                  '최종 완료',
-                                  store.schedules
-                                      .where((s) => s.isCompleted)
+                                  '7일 내 마감',
+                                  active
+                                      .where(
+                                        (s) =>
+                                            s.daysLeft(now) >= 0 &&
+                                            s.daysLeft(now) <= 7,
+                                      )
                                       .length,
                                   '개',
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(height: 26),
-                        _section('내 취향으로 챙기기', null),
-                        const SizedBox(height: 14),
-                        Card(
-                          child: Column(
+                          const SizedBox(height: 30),
+                          _section('지금 준비할 일', '${preparations.length}개 남음'),
+                          const SizedBox(height: 14),
+                          if (preparations.isEmpty)
+                            Container(
+                              padding: const EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                color: context.appColors.soft,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Text(
+                                active.isEmpty ? '일정을 추가하면 준비할 일을 모아드려요.' : '등록한 준비물은 모두 챙겼어요.\n실제 제출·처리도 마쳤는지 확인해보세요.',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: context.appColors.muted,
+                                ),
+                              ),
+                            )
+                          else
+                            Card(
+                              child: Column(
+                                children: preparations
+                                    .take(3)
+                                    .map(
+                                      (entry) => CheckboxListTile(
+                                        value: false,
+                                        controlAffinity:
+                                            ListTileControlAffinity.leading,
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 5,
+                                            ),
+                                        title: Text(
+                                          entry
+                                              .schedule
+                                              .items[entry.index]
+                                              .title,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          entry.schedule.title,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: context.appColors.muted,
+                                          ),
+                                        ),
+                                        secondary: IconButton(
+                                          tooltip: '일정 상세',
+                                          icon: const Icon(
+                                            Icons.north_east_rounded,
+                                            size: 17,
+                                          ),
+                                          onPressed: () =>
+                                              detail(entry.schedule),
+                                        ),
+                                        onChanged: !store.canEdit
+                                            ? null
+                                            : (_) async {
+                                                final items = [
+                                                  ...entry.schedule.items,
+                                                ];
+                                                items[entry
+                                                    .index] = Preparation(
+                                                  title:
+                                                      items[entry.index].title,
+                                                  done: true,
+                                                );
+                                                try {
+                                                  await store.put(
+                                                    entry.schedule.copyWith(
+                                                      items: items,
+                                                    ),
+                                                  );
+                                                } catch (_) {
+                                                  if (context.mounted) {
+                                                    ScaffoldMessenger.of(
+                                                      context,
+                                                    ).showSnackBar(
+                                                      const SnackBar(
+                                                        content: Text(
+                                                          '체크를 저장하지 못했어요.',
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }
+                                                }
+                                              },
+                                      ),
+                                    )
+                                    .toList(),
+                              ),
+                            ),
+                          const SizedBox(height: 30),
+                          Row(
                             children: [
-                              ListTile(
-                                key: const ValueKey('open-appearance'),
-                                contentPadding: const EdgeInsets.all(16),
-                                leading: const Icon(Icons.palette_outlined),
-                                title: const Text(
-                                  '테마 꾸미기',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                              Expanded(child: _section('다가오는 일정', null)),
+                              TextButton(
+                                onPressed: () => setState(() => tab = 1),
+                                child: const Text(
+                                  '전체 보기',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          if (active.length > 1)
+                            ...active
+                                .skip(1)
+                                .take(3)
+                                .map(
+                                  (s) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: ScheduleCard(
+                                      schedule: s,
+                                      onTap: () => detail(s),
+                                    ),
+                                  ),
+                                )
+                          else
+                            Text(
+                              '다가오는 일정은 여기에 모아드려요.',
+                              style: TextStyle(
+                                color: context.appColors.muted,
+                                fontSize: 13,
+                              ),
+                            ),
+                          const SizedBox(height: 14),
+                          InkWell(
+                            onTap: guide,
+                            borderRadius: BorderRadius.circular(18),
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: context.appColors.line,
+                                ),
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.widgets_outlined,
+                                    color: context.appColors.forest,
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      '앱을 열지 않아도, 위젯으로 챙겨요',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  Icon(Icons.chevron_right, size: 18),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (tab == 1) ...[
+                          Text(
+                            '모든 일정을\n한곳에 차곡차곡.',
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          const SizedBox(height: 22),
+                          TextField(
+                            onChanged: (value) => setState(() => query = value),
+                            decoration: const InputDecoration(
+                              hintText: '제목, 메모로 검색',
+                              prefixIcon: Icon(Icons.search_rounded),
+                            ),
+                          ),
+                          const SizedBox(height: 18),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 7,
+                                  children: ['진행 중', '전체', '완료']
+                                      .map(
+                                        (value) => ChoiceChip(
+                                          label: Text(value),
+                                          selected: filter == value,
+                                          onSelected: (_) =>
+                                              setState(() => filter = value),
+                                        ),
+                                      )
+                                      .toList(),
+                                ),
+                              ),
+                              PopupMenuButton<String>(
+                                tooltip: '기간 필터',
+                                initialValue: period,
+                                onSelected: (value) =>
+                                    setState(() => period = value),
+                                itemBuilder: (_) => ['전체 기간', '7일 이내']
+                                    .map(
+                                      (v) => PopupMenuItem(
+                                        value: v,
+                                        child: Text(v),
+                                      ),
+                                    )
+                                    .toList(),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: Text(
+                                    '$period ▾',
+                                    style: const TextStyle(fontSize: 11),
                                   ),
                                 ),
-                                subtitle: Text(
-                                  '${widget.appearance.active.label} · 앱과 위젯의 색 바꾸기',
-                                  style: const TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: ['전체', ...categories]
+                                  .map(
+                                    (value) => Padding(
+                                      padding: const EdgeInsets.only(right: 7),
+                                      child: FilterChip(
+                                        label: Text(
+                                          value,
+                                          style: const TextStyle(fontSize: 11),
+                                        ),
+                                        selected: category == value,
+                                        onSelected: (_) =>
+                                            setState(() => category = value),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          _section('일정 목록', '${visible.length}개'),
+                          const SizedBox(height: 14),
+                          if (visible.isEmpty)
+                            _empty('표시할 일정이 없어요', '새 일정을 추가하거나 검색 조건을 바꿔보세요.')
+                          else
+                            ...visible.map(
+                              (s) => Padding(
+                                padding: const EdgeInsets.only(bottom: 14),
+                                child: ScheduleCard(
+                                  schedule: s,
+                                  onTap: () => detail(s),
                                 ),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => AppearanceScreen(
-                                      appearance: widget.appearance,
-                                      plus: widget.plus,
+                              ),
+                            ),
+                        ],
+                        if (tab == 2) ...[
+                          Text(
+                            '나를 위한\n작은 챙김.',
+                            style: Theme.of(context).textTheme.headlineLarge,
+                          ),
+                          const SizedBox(height: 24),
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: context.appColors.lime,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _stat(
+                                    '전체 일정',
+                                    store.schedules.length,
+                                    '개',
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _stat(
+                                    '최종 완료',
+                                    store.schedules
+                                        .where((s) => s.isCompleted)
+                                        .length,
+                                    '개',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 26),
+                          _section('내 취향으로 챙기기', null),
+                          const SizedBox(height: 14),
+                          Card(
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  key: const ValueKey('open-appearance'),
+                                  contentPadding: const EdgeInsets.all(16),
+                                  leading: const Icon(Icons.palette_outlined),
+                                  title: const Text(
+                                    '테마 꾸미기',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    '${widget.appearance.active.label} · 앱과 위젯의 색 바꾸기',
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => AppearanceScreen(
+                                        appearance: widget.appearance,
+                                        plus: widget.plus,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const Divider(indent: 16, endIndent: 16),
-                              ListTile(
-                                key: const ValueKey('open-plus'),
-                                contentPadding: const EdgeInsets.all(16),
-                                leading: const Icon(
-                                  Icons.auto_awesome_outlined,
-                                ),
-                                title: Text(
-                                  widget.plus.isPlus
-                                      ? '챙김 플러스 · 사용 중'
-                                      : '챙김 플러스',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                                const Divider(indent: 16, endIndent: 16),
+                                ListTile(
+                                  key: const ValueKey('open-plus'),
+                                  contentPadding: const EdgeInsets.all(16),
+                                  leading: const Icon(
+                                    Icons.auto_awesome_outlined,
+                                  ),
+                                  title: Text(
+                                    widget.plus.isPlus
+                                        ? '챙김 플러스 · 사용 중'
+                                        : '챙김 플러스',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  subtitle: const Text(
+                                    '광고 제거와 취향을 담은 테마',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () => Navigator.push(
+                                    context,
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          PlusScreen(plus: widget.plus),
+                                    ),
                                   ),
                                 ),
-                                subtitle: const Text(
-                                  '광고 제거와 취향을 담은 테마',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute<void>(
-                                    builder: (_) =>
-                                        PlusScreen(plus: widget.plus),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 26),
+                          _section('더 편하게 챙기기', null),
+                          const SizedBox(height: 14),
+                          Card(
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  contentPadding: const EdgeInsets.all(16),
+                                  leading: const Icon(Icons.widgets_outlined),
+                                  title: const Text(
+                                    '홈 화면 위젯',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 26),
-                        _section('더 편하게 챙기기', null),
-                        const SizedBox(height: 14),
-                        Card(
-                          child: Column(
-                            children: [
-                              ListTile(
-                                contentPadding: const EdgeInsets.all(16),
-                                leading: const Icon(Icons.widgets_outlined),
-                                title: const Text(
-                                  '홈 화면 위젯',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                                  subtitle: const Text(
+                                    '소형·중형 위젯 추가와 사용법',
+                                    style: TextStyle(fontSize: 12),
                                   ),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: guide,
                                 ),
-                                subtitle: const Text(
-                                  '소형·중형 위젯 추가와 사용법',
-                                  style: TextStyle(fontSize: 12),
+                                const Divider(indent: 16, endIndent: 16),
+                                ListTile(
+                                  contentPadding: const EdgeInsets.all(16),
+                                  leading: const Icon(Icons.notifications_none),
+                                  title: const Text(
+                                    '마감 알림',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                  subtitle: const Text(
+                                    '권한·전체 설정·테스트 알림',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: notifications,
                                 ),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: guide,
-                              ),
-                              const Divider(indent: 16, endIndent: 16),
-                              ListTile(
-                                contentPadding: const EdgeInsets.all(16),
-                                leading: const Icon(Icons.notifications_none),
-                                title: const Text(
-                                  '마감 알림',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                                subtitle: const Text(
-                                  '권한·전체 설정·테스트 알림',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                trailing: const Icon(Icons.chevron_right),
-                                onTap: notifications,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                        _section('데이터 안내', null),
-                        const SizedBox(height: 12),
-                        Text(
-                          '일정은 현재 기기에 저장돼요. 앱 삭제 시 데이터가 삭제될 수 있어요. 클라우드 백업은 아직 제공하지 않아요.',
-                          style: TextStyle(
-                            color: context.appColors.muted,
-                            fontSize: 12,
+                          const SizedBox(height: 24),
+                          _section('데이터 안내', null),
+                          const SizedBox(height: 12),
+                          Text(
+                            '일정은 현재 기기에 저장돼요. 앱 삭제 시 데이터가 삭제될 수 있어요. 클라우드 백업은 아직 제공하지 않아요.',
+                            style: TextStyle(
+                              color: context.appColors.muted,
+                              fontSize: 12,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                        TextButton(
-                          onPressed: () => showLicensePage(
-                            context: context,
-                            applicationName: '챙김',
-                            applicationVersion: '0.2',
-                            applicationLegalese:
-                                'Paperlogy · SIL Open Font License 1.1',
-                          ),
-                          child: const Text('오픈소스 라이선스'),
-                        ),
-                        if (widget.ads.privacyRequired)
+                          const SizedBox(height: 24),
                           TextButton(
-                            onPressed: () async {
-                              final success = await widget.ads.privacyOptions();
-                              if (!success && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      '광고 개인정보 설정을 열지 못했어요. 다시 시도해 주세요.',
+                            onPressed: () => showLicensePage(
+                              context: context,
+                              applicationName: '챙김',
+                              applicationVersion: '0.2',
+                              applicationLegalese:
+                                  'Paperlogy · SIL Open Font License 1.1',
+                            ),
+                            child: const Text('오픈소스 라이선스'),
+                          ),
+                          if (widget.ads.privacyRequired)
+                            TextButton(
+                              onPressed: () async {
+                                final success = await widget.ads
+                                    .privacyOptions();
+                                if (!success && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        '광고 개인정보 설정을 열지 못했어요. 다시 시도해 주세요.',
+                                      ),
                                     ),
-                                  ),
-                                );
-                              }
-                            },
-                            child: const Text('광고 개인정보 설정'),
-                          ),
-                        if (widget.plus.showAds && widget.ads.configured)
-                          SponsorBanner(
-                            key: ValueKey(widget.ads.revision),
-                            ads: widget.ads,
-                          ),
+                                  );
+                                }
+                              },
+                              child: const Text('광고 개인정보 설정'),
+                            ),
+                          if (widget.plus.showAds && widget.ads.configured)
+                            SponsorBanner(
+                              key: ValueKey(widget.ads.revision),
+                              ads: widget.ads,
+                            ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),

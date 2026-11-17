@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
@@ -25,7 +26,13 @@ class AdsController extends ChangeNotifier {
     if (!_disposed) notifyListeners();
   }
 
-  Future<void> initialize() => _initializing ??= _initialize();
+  Future<void> initialize() {
+    if (_disposed || !configured || ready) return Future<void>.value();
+    return _initializing ??= _initialize().whenComplete(
+      () => _initializing = null,
+    );
+  }
+
   Future<void> _initialize() async {
     if (!configured) return;
     try {

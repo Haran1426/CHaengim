@@ -44,6 +44,10 @@ flutter run
 
 Android 빌드 환경과 Windows 설정은 [개발 환경 설정](docs/development-setup.md)을 참고하세요.
 
+홈·일정·마이 화면에서 아래로 당겨 새로고침합니다. 다시 불러오기에 실패하면 마지막으로 확인한 일정을 표시하고 재시도를 안내합니다. [지연·새로고침 처리](docs/async-reliability.md)에 동시 요청과 시간 초과 처리 범위를 정리했습니다.
+
+출시는 Google Play를 먼저 준비합니다. 정식 패키지 ID·업로드 서명·개인정보 및 SDK 신고 등 남은 작업은 [Google Play 출시 준비](docs/google-play-launch.md)를 참고하세요.
+
 ## 코드 구조
 
 - `lib/models/`: 일정과 준비물 데이터, 진행 단계, D-day 계산

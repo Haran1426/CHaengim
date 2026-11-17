@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../design/app_theme.dart';
 import '../platform/notification_bridge.dart';
 
@@ -14,6 +15,7 @@ class _NotificationSettingsState extends State<NotificationSettings>
   ReminderStatus? status;
   bool busy = false;
   String? error;
+  int _request = 0;
   @override
   void initState() {
     super.initState();
@@ -32,25 +34,31 @@ class _NotificationSettingsState extends State<NotificationSettings>
     if (state == AppLifecycleState.resumed) refresh();
   }
 
-  Future<void> refresh() async {
+  Future<void> refresh({bool afterAction = false}) async {
+    if (!mounted || (busy && !afterAction)) return;
+    final request = ++_request;
     try {
       final current = await bridge.status();
-      if (mounted) {
+      if (mounted && request == _request) {
         setState(() {
           status = current;
           error = null;
         });
       }
     } catch (_) {
-      if (mounted) setState(() => error = '알림 상태를 확인하지 못했어요. 다시 시도해 주세요.');
+      if (mounted && request == _request) {
+        setState(() => error = '알림 상태를 확인하지 못했어요. 다시 시도해 주세요.');
+      }
     }
   }
 
   Future<void> perform(Future<void> Function() action) async {
+    if (busy) return;
+    _request++;
     setState(() => busy = true);
     try {
       await action();
-      await refresh();
+      await refresh(afterAction: true);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

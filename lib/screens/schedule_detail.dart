@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../data/schedule_store.dart';
 import '../models/schedule.dart';
 import 'schedule_editor.dart';
@@ -73,7 +74,7 @@ class ScheduleDetail extends StatelessWidget {
             IconButton(
               tooltip: '일정 수정',
               icon: const Icon(Icons.edit_outlined),
-              onPressed: store.saving
+              onPressed: !store.canEdit
                   ? null
                   : () => Navigator.push(
                       context,
@@ -86,7 +87,7 @@ class ScheduleDetail extends StatelessWidget {
             IconButton(
               tooltip: '일정 삭제',
               icon: const Icon(Icons.delete_outline),
-              onPressed: store.saving ? null : () => delete(context),
+              onPressed: !store.canEdit ? null : () => delete(context),
             ),
           ],
         ),
@@ -243,7 +244,7 @@ class ScheduleDetail extends StatelessWidget {
                         ),
                       )
                       .toList(),
-                  onChanged: store.saving
+                  onChanged: !store.canEdit
                       ? null
                       : (stage) {
                           if (stage != null) {
@@ -285,7 +286,7 @@ class ScheduleDetail extends StatelessWidget {
                           ),
                         ),
                         value: entry.value.done,
-                        onChanged: store.saving
+                        onChanged: !store.canEdit
                             ? null
                             : (value) {
                                 final items = [...schedule.items];
@@ -312,7 +313,7 @@ class ScheduleDetail extends StatelessWidget {
                       ),
                     ),
                     TextButton.icon(
-                      onPressed: store.saving
+                      onPressed: !store.canEdit
                           ? null
                           : () => Navigator.push(
                               context,

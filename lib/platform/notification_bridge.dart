@@ -1,6 +1,8 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
 import '../models/schedule.dart';
 import '../models/reminder_plan.dart';
 
@@ -39,7 +41,10 @@ class NotificationBridge {
   Future<ReminderStatus> status() async => !supported
       ? const ReminderStatus()
       : ReminderStatus.fromMap(
-          await channel.invokeMapMethod<Object?, Object?>('status') ?? {},
+          await channel
+                  .invokeMapMethod<Object?, Object?>('status')
+                  .timeout(const Duration(seconds: 8)) ??
+              {},
         );
   Future<ReminderStatus> requestPermission({bool onlyFirstTime = false}) async {
     final current = await status();
