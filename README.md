@@ -31,6 +31,8 @@
 
 ## 실행 및 확인
 
+Flutter **3.50.0 이상**과 Dart **3.14.0 이상**을 사용합니다. Material UI와 한국어 날짜·시간 선택은 별도 `material_ui` 패키지를 사용합니다.
+
 Flutter SDK를 PATH에 등록한 터미널에서:
 
 ```sh
@@ -39,6 +41,8 @@ flutter analyze
 flutter test
 flutter run
 ```
+
+Android 빌드 환경과 Windows 설정은 [개발 환경 설정](docs/development-setup.md)을 참고하세요.
 
 ## 코드 구조
 

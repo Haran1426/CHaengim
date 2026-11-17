@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../data/schedule_store.dart';
 import '../models/schedule.dart';
 import '../models/reminder_plan.dart';

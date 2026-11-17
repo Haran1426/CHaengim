@@ -1,6 +1,6 @@
 // 실제 앱 데이터와 분리된 시각 검수용 진입점입니다.
 // 반드시 --android-project-arg=chaengimPreview=true 로 빌드합니다.
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:my_first_app/data/schedule_store.dart';
 import 'package:my_first_app/models/schedule.dart';
 import 'package:my_first_app/main.dart' as app;

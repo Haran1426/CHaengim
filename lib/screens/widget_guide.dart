@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../design/app_theme.dart';
 import '../models/schedule.dart';
 import '../platform/widget_bridge.dart';
