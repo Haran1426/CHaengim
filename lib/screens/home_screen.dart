@@ -782,7 +782,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             },
                             child: const Text('광고 개인정보 설정'),
                           ),
-                        if (widget.plus.showAds && widget.ads.ready)
+                        if (widget.plus.showAds && widget.ads.configured)
                           SponsorBanner(
                             key: ValueKey(widget.ads.revision),
                             ads: widget.ads,

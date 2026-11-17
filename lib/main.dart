@@ -26,10 +26,12 @@ class MyApp extends StatefulWidget {
     this.storage,
     this.appearanceStorage,
     this.plusGateway,
+    this.adsController,
   });
   final ScheduleStorage? storage;
   final AppearanceStorage? appearanceStorage;
   final PlusGateway? plusGateway;
+  final AdsController? adsController;
   @override
   State<MyApp> createState() => _MyAppState();
 }
@@ -47,7 +49,7 @@ class _MyAppState extends State<MyApp> {
       widget.appearanceStorage ?? LocalAppearanceStorage(),
       syncWidget: widget.storage == null ? bridge.syncAppearance : null,
     )..load();
-    ads = AdsController(enabled: widget.storage == null);
+    ads = widget.adsController ?? AdsController(enabled: widget.storage == null);
     plus = PlusStore(widget.plusGateway ?? RevenueCatGateway());
     plus.addListener(updatePlus);
     plus.refresh();
@@ -62,7 +64,6 @@ class _MyAppState extends State<MyApp> {
 
   void updatePlus() {
     appearance.setPlus(plus.isPlus);
-    if (plus.showAds) ads.initialize();
   }
 
   @override

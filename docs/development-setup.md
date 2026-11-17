@@ -31,6 +31,14 @@ flutter build apk --debug --no-pub
 
 디버그 APK는 `build/app/outputs/flutter-apk/app-debug.apk`에 생성됩니다. 배포용 서명과 실제 광고·구매 설정은 별도 작업입니다.
 
+휴대폰에 파일을 옮겨 설치할 때는 릴리스 APK로 확인합니다.
+
+```sh
+flutter build apk --release --no-pub
+```
+
+파일은 `build/app/outputs/flutter-apk/app-release.apk`에 생성됩니다. 현재 프로젝트는 로컬 설치 테스트를 위해 릴리스에도 개발용 서명 키를 사용합니다. Play 스토어 출시에 필요한 정식 서명 설정은 별도로 해야 합니다. 같은 키로 서명한 새 APK는 기존 앱 위에 업데이트로 설치합니다.
+
 ## Windows의 심볼릭 링크 안내
 
 Windows 데스크톱 플러그인 설정 중 `Building with plugins requires symlink support`가 나오면 Windows의 개발자 모드 설정을 확인하세요. 이 설정은 자동으로 변경하지 않습니다.
@@ -58,3 +66,13 @@ Windows에서 `x86_64 emulation currently requires hardware acceleration`이 나
 - Android 빌드에는 일부 플러그인의 Java 및 Gradle 사용 중단 안내가 남아 있습니다. 현재 빌드를 막지는 않지만 Gradle 10으로 올리기 전 플러그인 호환성을 확인해야 합니다.
 
 같은 날 일정 저장소의 종료 시점 오류를 수정한 뒤 Flutter 테스트 28개와 코드 검사를 통과했고 일반 앱 APK를 다시 생성했습니다. 로딩·저장 중 종료를 재현하는 테스트를 포함하며, 에뮬레이터 실행은 위의 가속 환경 문제로 확인하지 못했습니다.
+
+## 1.0.1 시작 문제 점검
+
+- 이후 실행 가능한 Android 17 에뮬레이터에서 기존 APK의 x86_64 홈 화면 표시를 확인했습니다.
+- ARM64 변환 실행에서는 시작 중 광고 SDK가 불러오는 WebView의 `Chrome_InProcGp` 네이티브 SIGSEGV가 관찰됐습니다. 변환 환경의 결과이므로 갤럭시 와이드7의 종료 원인과 같다고 확정할 수 없습니다.
+- 홈에서는 광고 SDK를 초기화하지 않고 실제 광고 영역이 만들어질 때 초기화하도록 바꿨습니다. 수정 후 ARM64 변환 실행에서도 홈 화면 표시와 프로세스 유지를 확인했습니다.
+- 홈·일정 화면에서 광고 SDK를 시작하지 않는 검사와 광고 영역에서 초기화를 시도하는 검사를 추가했습니다. Flutter 테스트 30개와 코드 검사를 통과했습니다.
+- 릴리스 APK 설치 테스트에서는 별도로 `InitializationProvider`가 `WorkDatabase`를 만들지 못해 시작 전에 종료되는 오류를 재현했습니다. 광고 SDK의 전이 의존성인 WorkManager 2.7.0을 2.11.2로 올렸습니다. [광고 SDK 공식 저장소의 같은 오류 보고](https://github.com/googleads/googleads-mobile-flutter/issues/1444)를 참고했습니다.
+- 변경 후 릴리스 APK를 기존 앱 위에 업데이트 설치하고 Android 17 에뮬레이터의 ARM64 변환 실행에서 홈 표시와 프로세스 유지를 확인했습니다. [릴리스 실행 화면](screenshots/startup-1.0.1.png). 설치 파일은 `build/app/outputs/flutter-apk/chaengim-1.0.1.apk`로 복사했습니다.
+- 갤럭시 와이드7 실기기의 오류 로그는 아직 확보하지 못했습니다. 새 APK로도 종료되면 USB 디버깅 연결 후 실제 기기의 로그를 확인해야 합니다.

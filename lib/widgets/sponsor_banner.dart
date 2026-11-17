@@ -36,6 +36,9 @@ class _SponsorBannerState extends State<SponsorBanner> {
       _ad = null;
       _loaded = false;
     });
+    // 광고가 표시될 때만 SDK/WebView를 준비해 앱 시작과 분리합니다.
+    await widget.ads.initialize();
+    if (!mounted || generation != _generation || !widget.ads.ready) return;
     final size = await AdSize.getLargeAnchoredAdaptiveBannerAdSize(width);
     if (!mounted || generation != _generation || size == null) return;
     final ad = BannerAd(
