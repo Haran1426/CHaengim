@@ -1,12 +1,28 @@
 import 'support/commerce_fakes.dart' show MemoryAppearanceStorage;
+
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_first_app/main.dart';
 import 'package:my_first_app/models/schedule.dart';
 import 'package:my_first_app/widgets/schedule_card.dart';
+
 import 'schedule_store_test.dart' show MemoryStorage;
 
 void main() {
+  setUpAll(() async {
+    // 글꼴 교체로 달라지는 실제 한글 폭과 줄 높이도 검수합니다.
+    final body = FontLoader('Pretendard');
+    for (final weight in ['Regular', 'Medium', 'SemiBold', 'Bold']) {
+      body.addFont(
+        rootBundle.load('assets/fonts/pretendard/Pretendard-$weight.otf'),
+      );
+    }
+    final display = FontLoader('MaruBuri')
+      ..addFont(rootBundle.load('assets/fonts/maruburi/MaruBuri-SemiBold.ttf'));
+    await Future.wait([body.load(), display.load()]);
+  });
+
   testWidgets('320px 화면과 큰 글씨에서 홈·일정·위젯 가이드가 넘치지 않는다', (tester) async {
     tester.view.physicalSize = const Size(320, 740);
     tester.view.devicePixelRatio = 1;

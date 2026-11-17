@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+
 import 'data/schedule_store.dart';
 import 'screens/home_screen.dart';
 import 'design/app_theme.dart';
@@ -14,8 +15,11 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks([
-      'Paperlogy',
-    ], await rootBundle.loadString('assets/fonts/OFL.txt'));
+      'MaruBuri',
+    ], await rootBundle.loadString('assets/fonts/maruburi/OFL.txt'));
+    yield LicenseEntryWithLineBreaks([
+      'Pretendard',
+    ], await rootBundle.loadString('assets/fonts/pretendard/OFL.txt'));
   });
   runApp(const MyApp());
 }
@@ -49,7 +53,8 @@ class _MyAppState extends State<MyApp> {
       widget.appearanceStorage ?? LocalAppearanceStorage(),
       syncWidget: widget.storage == null ? bridge.syncAppearance : null,
     )..load();
-    ads = widget.adsController ?? AdsController(enabled: widget.storage == null);
+    ads =
+        widget.adsController ?? AdsController(enabled: widget.storage == null);
     plus = PlusStore(widget.plusGateway ?? RevenueCatGateway());
     plus.addListener(updatePlus);
     plus.refresh();

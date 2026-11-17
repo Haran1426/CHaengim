@@ -5,12 +5,12 @@
 [Things](https://culturedcode.com/things/)의 여백, 단계별 정보 강조, 해야 할 일에 집중하는 목록 구성을 참고합니다. 화면을 복제하지 않고, 챙김의 마감·준비·제출·결과 대기 흐름에 맞춰 재구성했습니다.
 
 - 종이빛 바탕 `#F6F4EF`, 짙은 초록 `#244C3F`, 연두 `#E0EEAC`
-- Paperlogy 400/500/600/700을 앱에 포함해 오프라인에서도 같은 글꼴 사용
+- 큰 제목은 MaruBuri 600, 본문·버튼·숫자는 Pretendard 400/500/600/700. 앱에 포함해 오프라인에서도 같은 글꼴 사용
 - 제목·마감·남은 준비물이 먼저 보이도록 배치. 핵심 화면의 본문·안내는 14px 이상으로 유지하고 보조 글씨의 대비도 확보
 - 같은 정보를 문장·숫자·진행 설명으로 반복하지 않기. 홍보 문구와 내용 없는 구역은 홈에서 표시하지 않기
 - 의미가 같은 요소는 같은 색·간격·둥근 모서리 사용
 
-폰트 출처와 조건: [Paperlogy 공식 저장소](https://github.com/Freesentation/paperlogy), SIL Open Font License 1.1. 원본 폰트와 라이선스를 함께 포함합니다.
+폰트 출처와 조건: [마루부리 공식 소개](https://m-hangeul.naver.com/font/detail/maru-buri), [네이버 라이선스 안내](https://help.naver.com/service/30016/contents/18088?lang=ko&osType=PC), [Pretendard 공식 저장소](https://github.com/orioncactus/pretendard). SIL Open Font License 1.1 원문을 앱의 오픈소스 라이선스에도 표시합니다. 배포 파일과 해시는 [폰트 자산 기록](../assets/fonts/README.md)을 참고하세요.
 
 ## 화면 순서
 
@@ -71,3 +71,12 @@ flutter build apk --debug -t tool/preview.dart --android-project-arg=chaengimPre
 - 핵심 화면의 작은 11~13px 문구를 14px 이상으로 키우고 기본 본문은 16px로 조정했습니다. 보조 글자색을 진하게 해 5개 테마 바탕과의 계산 대비가 5.7:1 이상이 되게 했습니다.
 - 코드 검사 지적 사항 0건, 테스트 43개 통과. 기존 320px·글자 1.6배 화면 검사와 저장·준비물 체크 흐름을 확인했습니다.
 - 별도 검수용 앱의 예시 데이터로 Android 17 ARM64 변환 실행에서 [홈](screenshots/home-readable.png)·[마이](screenshots/my-readable.png)를 확인했습니다. 일반 배포용 APK는 예시 데이터를 넣지 않은 기본 진입점으로 다시 빌드합니다.
+
+## 1.0.4 글꼴 조합
+
+- 앱 상단 제목·큰 제목·홈 대표 일정에 마루부리 SemiBold를 사용해 종이빛 테마의 인상을 살렸습니다.
+- 본문·일정 목록·버튼·날짜·D-day는 Pretendard를 사용합니다. 기본 본문은 Regular, 메뉴는 Medium/SemiBold, 마감 숫자는 Bold로 구분합니다.
+- 이전의 음수 자간을 없애고 제목 줄 높이를 1.4로 맞췄습니다. 기본 본문 16px·줄 높이 1.5와 운영체제 글자 크기 설정을 유지합니다.
+- 폰트를 원본 파일로 앱에 포함해 네트워크에 의존하지 않습니다. 두 글꼴의 저작권 고지·라이선스 전문을 포함하고 앱의 라이선스 화면에도 등록했습니다.
+- 정적 분석 지적 사항 0건, Flutter 테스트 43개 통과. 기존 320px·글자 1.6배 검사는 실제 한글 폰트를 로드해 수행합니다.
+- 별도 검수용 앱에서 [홈](screenshots/home-typography.png)·[상세](screenshots/detail-typography.png)와 [Android 큰 글씨 설정](screenshots/home-typography-large.png)을 확인했습니다. 일반 설치용 APK는 예시 데이터를 넣지 않은 기본 진입점으로 다시 빌드합니다.

@@ -1,7 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
 import 'app_skin.dart';
+import 'app_typography.dart';
 export 'app_skin.dart';
+export 'app_typography.dart';
 
 ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
   final colors = skin.palette;
@@ -15,7 +17,7 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
   );
   final base = ThemeData(
     useMaterial3: true,
-    fontFamily: 'Paperlogy',
+    fontFamily: AppTypography.body,
     colorScheme: scheme,
   );
   final text = base.textTheme.apply(
@@ -27,40 +29,42 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
     scaffoldBackgroundColor: colors.paper,
     textTheme: text.copyWith(
       headlineLarge: TextStyle(
-        fontFamily: 'Paperlogy',
+        fontFamily: AppTypography.display,
         fontSize: 32,
-        height: 1.3,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -1.3,
+        height: 1.4,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0,
         color: colors.ink,
       ),
       headlineMedium: TextStyle(
-        fontFamily: 'Paperlogy',
+        fontFamily: AppTypography.display,
         fontSize: 27,
-        height: 1.35,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -1,
+        height: 1.4,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0,
         color: colors.ink,
       ),
       titleLarge: text.titleLarge?.copyWith(
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        letterSpacing: -.6,
+        letterSpacing: 0,
       ),
       titleMedium: text.titleMedium?.copyWith(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        letterSpacing: -.3,
+        letterSpacing: 0,
       ),
       bodyMedium: text.bodyMedium?.copyWith(
         fontSize: 16,
+        fontWeight: FontWeight.w400,
         height: 1.5,
         letterSpacing: 0,
       ),
       bodyLarge: text.bodyLarge?.copyWith(
         fontSize: 16,
+        fontWeight: FontWeight.w400,
         height: 1.5,
-        letterSpacing: -.3,
+        letterSpacing: 0,
       ),
     ),
     appBarTheme: AppBarTheme(
@@ -69,9 +73,10 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleTextStyle: TextStyle(
-        fontFamily: 'Paperlogy',
-        fontSize: 18,
+        fontFamily: AppTypography.display,
+        fontSize: 20,
         fontWeight: FontWeight.w600,
+        letterSpacing: 0,
         color: colors.ink,
       ),
     ),
@@ -106,7 +111,7 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
         minimumSize: const Size(0, 52),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         textStyle: const TextStyle(
-          fontFamily: 'Paperlogy',
+          fontFamily: AppTypography.body,
           fontWeight: FontWeight.w600,
           fontSize: 15,
         ),
@@ -125,7 +130,7 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
       height: 76,
       labelTextStyle: WidgetStateProperty.all(
         const TextStyle(
-          fontFamily: 'Paperlogy',
+          fontFamily: AppTypography.body,
           fontSize: 13,
           fontWeight: FontWeight.w500,
         ),

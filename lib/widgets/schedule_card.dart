@@ -84,10 +84,13 @@ class ScheduleCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
+                  fontFamily: featured
+                      ? AppTypography.display
+                      : AppTypography.body,
                   color: ink,
                   fontSize: featured ? 23 : 19,
                   height: 1.4,
-                  letterSpacing: -.6,
+                  letterSpacing: 0,
                   fontWeight: FontWeight.w600,
                 ),
               ),
