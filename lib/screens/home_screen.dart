@@ -737,7 +737,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                             onPressed: () => showLicensePage(
                               context: context,
                               applicationName: '챙김',
-                              applicationVersion: '1.0.6',
+                              applicationVersion: '1.0.7',
                               applicationLegalese:
                                   'Noto Sans KR\nSIL Open Font License 1.1',
                             ),

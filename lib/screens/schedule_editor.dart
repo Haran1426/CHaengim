@@ -169,247 +169,255 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
               : '새 일정',
         ),
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Form(
-            key: form,
-            child: ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                if (widget.followUpTo != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 14),
-                    child: Text(
-                      '연결된 일정 · ${widget.followUpTo!.title}',
-                      style: const TextStyle(fontSize: 14),
+      body: SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Form(
+              key: form,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  if (widget.followUpTo != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 14),
+                      child: Text(
+                        '연결된 일정 · ${widget.followUpTo!.title}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: title,
+                    enabled: !busy,
+                    maxLength: 100,
+                    decoration: const InputDecoration(
+                      labelText: '일정 제목',
+                      hintText: '예: 국가장학금 신청',
+                    ),
+                    validator: (value) => value == null || value.trim().isEmpty
+                        ? '일정 제목을 입력해 주세요.'
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: Column(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.calendar_today_outlined),
+                          title: const Text('마감일'),
+                          subtitle: Text(
+                            '${date.year}년 ${date.month}월 ${date.day}일',
+                          ),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: busy
+                              ? null
+                              : () async {
+                                  final selected = await showDatePicker(
+                                    context: context,
+                                    initialDate: date,
+                                    firstDate: DateTime(2000),
+                                    lastDate: DateTime(2100, 12, 31),
+                                  );
+                                  if (selected != null && mounted) {
+                                    setState(() => date = selected);
+                                  }
+                                },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.schedule),
+                          title: const Text('마감 시간'),
+                          subtitle: Text(time?.format(context) ?? '시간 지정 안 함'),
+                          trailing: time == null
+                              ? const Icon(Icons.chevron_right)
+                              : IconButton(
+                                  tooltip: '시간 지정 해제',
+                                  onPressed: busy
+                                      ? null
+                                      : () => setState(() => time = null),
+                                  icon: const Icon(Icons.close),
+                                ),
+                          onTap: busy
+                              ? null
+                              : () async {
+                                  final selected = await showTimePicker(
+                                    context: context,
+                                    initialTime:
+                                        time ??
+                                        const TimeOfDay(hour: 18, minute: 0),
+                                  );
+                                  if (selected != null && mounted) {
+                                    setState(() => time = selected);
+                                  }
+                                },
+                        ),
+                      ],
                     ),
                   ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: title,
-                  enabled: !busy,
-                  maxLength: 100,
-                  decoration: const InputDecoration(
-                    labelText: '일정 제목',
-                    hintText: '예: 국가장학금 신청',
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    initialValue: category,
+                    decoration: const InputDecoration(labelText: '카테고리'),
+                    items: categories
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(value),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: busy
+                        ? null
+                        : (value) => setState(() => category = value!),
                   ),
-                  validator: (value) => value == null || value.trim().isEmpty
-                      ? '일정 제목을 입력해 주세요.'
-                      : null,
-                ),
-                const SizedBox(height: 12),
-                Card(
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.calendar_today_outlined),
-                        title: const Text('마감일'),
-                        subtitle: Text(
-                          '${date.year}년 ${date.month}월 ${date.day}일',
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
-                        onTap: busy
-                            ? null
-                            : () async {
-                                final selected = await showDatePicker(
-                                  context: context,
-                                  initialDate: date,
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2100, 12, 31),
-                                );
-                                if (selected != null && mounted) {
-                                  setState(() => date = selected);
-                                }
-                              },
+                  const SizedBox(height: 24),
+                  Text('준비물', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  ...items.asMap().entries.map(
+                    (entry) => ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        entry.value.done
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
                       ),
-                      ListTile(
-                        leading: const Icon(Icons.schedule),
-                        title: const Text('마감 시간'),
-                        subtitle: Text(time?.format(context) ?? '시간 지정 안 함'),
-                        trailing: time == null
-                            ? const Icon(Icons.chevron_right)
-                            : IconButton(
-                                tooltip: '시간 지정 해제',
-                                onPressed: busy
-                                    ? null
-                                    : () => setState(() => time = null),
-                                icon: const Icon(Icons.close),
-                              ),
-                        onTap: busy
+                      title: Text(entry.value.title),
+                      trailing: IconButton(
+                        tooltip: '준비물 삭제',
+                        onPressed: busy
                             ? null
-                            : () async {
-                                final selected = await showTimePicker(
-                                  context: context,
-                                  initialTime:
-                                      time ??
-                                      const TimeOfDay(hour: 18, minute: 0),
-                                );
-                                if (selected != null && mounted) {
-                                  setState(() => time = selected);
-                                }
-                              },
+                            : () => setState(() => items.removeAt(entry.key)),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: preparation,
+                          enabled: !busy,
+                          decoration: const InputDecoration(
+                            labelText: '준비물 추가',
+                            hintText: '예: 재학증명서 발급',
+                          ),
+                          onSubmitted: (_) => addItem(),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filled(
+                        onPressed: busy ? null : addItem,
+                        tooltip: '준비물 추가',
+                        icon: const Icon(Icons.add),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  initialValue: category,
-                  decoration: const InputDecoration(labelText: '카테고리'),
-                  items: categories
-                      .map(
-                        (value) =>
-                            DropdownMenuItem(value: value, child: Text(value)),
-                      )
-                      .toList(),
-                  onChanged: busy
-                      ? null
-                      : (value) => setState(() => category = value!),
-                ),
-                const SizedBox(height: 24),
-                Text('준비물', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                ...items.asMap().entries.map(
-                  (entry) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                      entry.value.done
-                          ? Icons.check_circle
-                          : Icons.radio_button_unchecked,
-                    ),
-                    title: Text(entry.value.title),
-                    trailing: IconButton(
-                      tooltip: '준비물 삭제',
-                      onPressed: busy
-                          ? null
-                          : () => setState(() => items.removeAt(entry.key)),
-                      icon: const Icon(Icons.close),
-                    ),
+                  const SizedBox(height: 24),
+                  Text('알림', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: reminderOptions
+                        .map(
+                          (days) => FilterChip(
+                            label: Text(reminderLabel(days)),
+                            selected: reminderDays.contains(days),
+                            onSelected: busy
+                                ? null
+                                : (selected) => setState(() {
+                                    reminderError = null;
+                                    selected
+                                        ? reminderDays.add(days)
+                                        : reminderDays.remove(days);
+                                  }),
+                          ),
+                        )
+                        .toList(),
                   ),
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: preparation,
-                        enabled: !busy,
-                        decoration: const InputDecoration(
-                          labelText: '준비물 추가',
-                          hintText: '예: 재학증명서 발급',
-                        ),
-                        onSubmitted: (_) => addItem(),
+                  if (reminderDays.isNotEmpty)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.notifications_none_rounded),
+                      title: const Text(
+                        '알림 시각',
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      subtitle: Text(reminderTime.format(context)),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: busy
+                          ? null
+                          : () async {
+                              final selected = await showTimePicker(
+                                context: context,
+                                initialTime: reminderTime,
+                              );
+                              if (selected != null && mounted) {
+                                setState(() {
+                                  reminderTime = selected;
+                                  reminderError = null;
+                                });
+                              }
+                            },
+                    ),
+                  if (reminderError != null)
+                    Text(
+                      reminderError!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                        fontSize: 14,
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    IconButton.filled(
-                      onPressed: busy ? null : addItem,
-                      tooltip: '준비물 추가',
-                      icon: const Icon(Icons.add),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Text('알림', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: reminderOptions
-                      .map(
-                        (days) => FilterChip(
-                          label: Text(reminderLabel(days)),
-                          selected: reminderDays.contains(days),
-                          onSelected: busy
-                              ? null
-                              : (selected) => setState(() {
-                                  reminderError = null;
-                                  selected
-                                      ? reminderDays.add(days)
-                                      : reminderDays.remove(days);
-                                }),
-                        ),
-                      )
-                      .toList(),
-                ),
-                if (reminderDays.isNotEmpty)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.notifications_none_rounded),
-                    title: const Text('알림 시각', style: TextStyle(fontSize: 14)),
-                    subtitle: Text(reminderTime.format(context)),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: busy
-                        ? null
-                        : () async {
-                            final selected = await showTimePicker(
-                              context: context,
-                              initialTime: reminderTime,
-                            );
-                            if (selected != null && mounted) {
-                              setState(() {
-                                reminderTime = selected;
-                                reminderError = null;
-                              });
-                            }
-                          },
-                  ),
-                if (reminderError != null)
                   Text(
-                    reminderError!,
+                    '절전 상태에서는 알림이 늦어질 수 있어요.',
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
                       fontSize: 14,
+                      color: context.appColors.muted,
                     ),
                   ),
-                Text(
-                  '절전 상태에서는 알림이 늦어질 수 있어요.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: context.appColors.muted,
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: memo,
+                    enabled: !busy,
+                    minLines: 3,
+                    maxLines: 6,
+                    decoration: const InputDecoration(
+                      labelText: '메모 (선택)',
+                      alignLabelWithHint: true,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: memo,
-                  enabled: !busy,
-                  minLines: 3,
-                  maxLines: 6,
-                  decoration: const InputDecoration(
-                    labelText: '메모 (선택)',
-                    alignLabelWithHint: true,
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: link,
+                    enabled: !busy,
+                    keyboardType: TextInputType.url,
+                    decoration: const InputDecoration(
+                      labelText: '참고 링크 (선택)',
+                      hintText: 'https://',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) return null;
+                      final uri = Uri.tryParse(value.trim());
+                      return uri != null &&
+                              ['http', 'https'].contains(uri.scheme) &&
+                              uri.host.isNotEmpty
+                          ? null
+                          : 'http:// 또는 https://로 시작하는 링크를 입력해 주세요.';
+                    },
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: link,
-                  enabled: !busy,
-                  keyboardType: TextInputType.url,
-                  decoration: const InputDecoration(
-                    labelText: '참고 링크 (선택)',
-                    hintText: 'https://',
+                  const SizedBox(height: 28),
+                  FilledButton.icon(
+                    onPressed: busy ? null : save,
+                    icon: const Icon(Icons.check),
+                    label: Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Text(busy ? '저장 중…' : '저장하기'),
+                    ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) return null;
-                    final uri = Uri.tryParse(value.trim());
-                    return uri != null &&
-                            ['http', 'https'].contains(uri.scheme) &&
-                            uri.host.isNotEmpty
-                        ? null
-                        : 'http:// 또는 https://로 시작하는 링크를 입력해 주세요.';
-                  },
-                ),
-                const SizedBox(height: 28),
-                FilledButton.icon(
-                  onPressed: busy ? null : save,
-                  icon: const Icon(Icons.check),
-                  label: Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Text(busy ? '저장 중…' : '저장하기'),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),

@@ -8,10 +8,49 @@ import 'package:my_first_app/design/app_theme.dart';
 import 'package:my_first_app/models/schedule.dart';
 import 'package:my_first_app/widgets/schedule_card.dart';
 import 'package:my_first_app/widgets/week_overview.dart';
+import 'package:my_first_app/screens/schedule_editor.dart';
+import 'package:my_first_app/data/schedule_store.dart';
 
 import 'schedule_store_test.dart' show MemoryStorage;
 
 void main() {
+  testWidgets('휴대폰 하단 버튼 영역과 키보드가 저장 버튼을 덮지 않는다', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    tester.view.viewPadding = const FakeViewPadding(bottom: 64);
+    tester.view.padding = const FakeViewPadding(bottom: 64);
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+      tester.view.resetViewPadding();
+      tester.view.resetPadding();
+      tester.view.resetViewInsets();
+    });
+    final store = ScheduleStore(MemoryStorage());
+    await store.load();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildAppTheme(),
+        home: ScheduleEditor(store: store),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final list = find.byType(ListView);
+    expect(tester.getRect(list).bottom, lessThanOrEqualTo(780));
+    await tester.drag(list, const Offset(0, -3000));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(find.text('저장하기')).bottom, lessThan(780));
+    tester.view.padding = const FakeViewPadding();
+    tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+    await tester.pumpAndSettle();
+    await tester.drag(list, const Offset(0, -3000));
+    await tester.pumpAndSettle();
+    expect(tester.getRect(list).bottom, lessThanOrEqualTo(544));
+    expect(tester.getRect(find.text('저장하기')).bottom, lessThan(544));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+    store.dispose();
+  });
   setUpAll(() async {
     // 글꼴 교체로 달라지는 실제 한글 폭과 줄 높이도 검수합니다.
     final body = FontLoader('NotoSansKR');

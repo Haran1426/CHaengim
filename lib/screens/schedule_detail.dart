@@ -91,250 +91,258 @@ class ScheduleDetail extends StatelessWidget {
             ),
           ],
         ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 720),
-            child: ListView(
-              padding: const EdgeInsets.all(24),
-              children: [
-                Text(
-                  '${schedule.category} · ${schedule.isCompleted ? '완료' : schedule.dDay(DateTime.now())}',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  schedule.title,
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.event_outlined,
-                      size: 17,
-                      color: context.appColors.muted,
+        body: SafeArea(
+          top: false,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: ListView(
+                padding: const EdgeInsets.all(24),
+                children: [
+                  Text(
+                    '${schedule.category} · ${schedule.isCompleted ? '완료' : schedule.dDay(DateTime.now())}',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '마감 ${formatDeadline(schedule)}',
-                      style: TextStyle(
-                        fontSize: 14,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    schedule.title,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.event_outlined,
+                        size: 17,
                         color: context.appColors.muted,
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 28),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: context.appColors.line),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Icon(Icons.notifications_none_rounded, size: 20),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              schedule.reminderDays.isEmpty
-                                  ? '알림 없음'
-                                  : '${schedule.reminderDays.map(reminderLabel).join(' · ')} / ${schedule.reminderHour.toString().padLeft(2, '0')}:${schedule.reminderMinute.toString().padLeft(2, '0')}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            if (schedule.reminderDays.isNotEmpty &&
-                                (schedule.isCompleted ||
-                                    nextReminders.isEmpty)) ...[
-                              const SizedBox(height: 5),
-                              Text(
-                                schedule.isCompleted
-                                    ? '최종 완료한 일정은 알림을 보내지 않아요.'
-                                    : nextReminders.isEmpty
-                                    ? '선택한 알림 시각이 지나 예약할 알림이 없어요.'
-                                    : '알림 수신 상태는 마이 → 마감 알림에서 확인해요.',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: context.appColors.muted,
-                                ),
-                              ),
-                            ],
-                          ],
+                      const SizedBox(width: 8),
+                      Text(
+                        '마감 ${formatDeadline(schedule)}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.appColors.muted,
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 20),
-                DropdownButtonFormField<ScheduleStage>(
-                  key: ValueKey('${schedule.stage}:${store.saving}'),
-                  initialValue: schedule.stage,
-                  isExpanded: true,
-                  decoration: const InputDecoration(labelText: '진행 단계'),
-                  items: ScheduleStage.values
-                      .map(
-                        (stage) => DropdownMenuItem(
-                          value: stage,
-                          child: Text(stage.label),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: !store.canEdit
-                      ? null
-                      : (stage) {
-                          if (stage != null) {
-                            update(context, schedule.copyWith(stage: stage));
-                          }
-                        },
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  '진행 단계는 직접 변경해요.',
-                  style: TextStyle(
-                    color: context.appColors.muted,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Text(
-                  '준비물 · ${schedule.remaining}개 남음',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 12),
-                if (schedule.items.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Text('준비물 없음'),
-                  ),
-                ...schedule.items.asMap().entries.map(
-                  (entry) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Card(
-                      child: CheckboxListTile(
-                        controlAffinity: ListTileControlAffinity.leading,
-                        title: Text(
-                          entry.value.title,
-                          style: TextStyle(
-                            decoration: entry.value.done
-                                ? TextDecoration.lineThrough
-                                : null,
-                          ),
-                        ),
-                        value: entry.value.done,
-                        onChanged: !store.canEdit
-                            ? null
-                            : (value) {
-                                final items = [...schedule.items];
-                                items[entry.key] = Preparation(
-                                  title: entry.value.title,
-                                  done: value ?? false,
-                                );
-                                update(
-                                  context,
-                                  schedule.copyWith(items: items),
-                                );
-                              },
-                      ),
+                  const SizedBox(height: 28),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: context.appColors.line),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 28),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '이어서 챙길 일정',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                    TextButton.icon(
-                      onPressed: !store.canEdit
-                          ? null
-                          : () => Navigator.push(
-                              context,
-                              MaterialPageRoute<void>(
-                                builder: (_) => ScheduleEditor(
-                                  store: store,
-                                  followUpTo: schedule,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.notifications_none_rounded, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                schedule.reminderDays.isEmpty
+                                    ? '알림 없음'
+                                    : '${schedule.reminderDays.map(reminderLabel).join(' · ')} / ${schedule.reminderHour.toString().padLeft(2, '0')}:${schedule.reminderMinute.toString().padLeft(2, '0')}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                            ),
-                      icon: const Icon(Icons.add_rounded, size: 17),
-                      label: const Text('추가', style: TextStyle(fontSize: 14)),
-                    ),
-                  ],
-                ),
-                if (children.isEmpty)
-                  Padding(
-                    padding: EdgeInsets.symmetric(vertical: 10),
-                    child: Text(
-                      '필요하면 다음 일정을 추가하세요.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: context.appColors.muted,
-                      ),
+                              if (schedule.reminderDays.isNotEmpty &&
+                                  (schedule.isCompleted ||
+                                      nextReminders.isEmpty)) ...[
+                                const SizedBox(height: 5),
+                                Text(
+                                  schedule.isCompleted
+                                      ? '최종 완료한 일정은 알림을 보내지 않아요.'
+                                      : nextReminders.isEmpty
+                                      ? '선택한 알림 시각이 지나 예약할 알림이 없어요.'
+                                      : '알림 수신 상태는 마이 → 마감 알림에서 확인해요.',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: context.appColors.muted,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ...children.map(
-                  (child) => Card(
-                    child: ListTile(
-                      title: Text(
-                        child.title,
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      subtitle: Text(
-                        '${formatDeadline(child)} · ${child.stage.label}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute<void>(
-                          builder: (_) =>
-                              ScheduleDetail(store: store, id: child.id),
+                  const SizedBox(height: 20),
+                  DropdownButtonFormField<ScheduleStage>(
+                    key: ValueKey('${schedule.stage}:${store.saving}'),
+                    initialValue: schedule.stage,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: '진행 단계'),
+                    items: ScheduleStage.values
+                        .map(
+                          (stage) => DropdownMenuItem(
+                            value: stage,
+                            child: Text(stage.label),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: !store.canEdit
+                        ? null
+                        : (stage) {
+                            if (stage != null) {
+                              update(context, schedule.copyWith(stage: stage));
+                            }
+                          },
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '진행 단계는 직접 변경해요.',
+                    style: TextStyle(
+                      color: context.appColors.muted,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+                  Text(
+                    '준비물 · ${schedule.remaining}개 남음',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 12),
+                  if (schedule.items.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Text('준비물 없음'),
+                    ),
+                  ...schedule.items.asMap().entries.map(
+                    (entry) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Card(
+                        child: CheckboxListTile(
+                          controlAffinity: ListTileControlAffinity.leading,
+                          title: Text(
+                            entry.value.title,
+                            style: TextStyle(
+                              decoration: entry.value.done
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
+                          value: entry.value.done,
+                          onChanged: !store.canEdit
+                              ? null
+                              : (value) {
+                                  final items = [...schedule.items];
+                                  items[entry.key] = Preparation(
+                                    title: entry.value.title,
+                                    done: value ?? false,
+                                  );
+                                  update(
+                                    context,
+                                    schedule.copyWith(items: items),
+                                  );
+                                },
                         ),
                       ),
                     ),
                   ),
-                ),
-                if (parents.isNotEmpty)
-                  TextButton.icon(
-                    onPressed: () => Navigator.push(
-                      context,
-                      MaterialPageRoute<void>(
-                        builder: (_) =>
-                            ScheduleDetail(store: store, id: parents.first.id),
+                  const SizedBox(height: 28),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '이어서 챙길 일정',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: !store.canEdit
+                            ? null
+                            : () => Navigator.push(
+                                context,
+                                MaterialPageRoute<void>(
+                                  builder: (_) => ScheduleEditor(
+                                    store: store,
+                                    followUpTo: schedule,
+                                  ),
+                                ),
+                              ),
+                        icon: const Icon(Icons.add_rounded, size: 17),
+                        label: const Text('추가', style: TextStyle(fontSize: 14)),
+                      ),
+                    ],
+                  ),
+                  if (children.isEmpty)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10),
+                      child: Text(
+                        '필요하면 다음 일정을 추가하세요.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.appColors.muted,
+                        ),
                       ),
                     ),
-                    icon: const Icon(Icons.subdirectory_arrow_left, size: 16),
-                    label: Text(
-                      '이전 일정 · ${parents.first.title}',
-                      style: const TextStyle(fontSize: 14),
+                  ...children.map(
+                    (child) => Card(
+                      child: ListTile(
+                        title: Text(
+                          child.title,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        subtitle: Text(
+                          '${formatDeadline(child)} · ${child.stage.label}',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                ScheduleDetail(store: store, id: child.id),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                if (schedule.memo.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  Text('메모', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  SelectableText(schedule.memo),
+                  if (parents.isNotEmpty)
+                    TextButton.icon(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => ScheduleDetail(
+                            store: store,
+                            id: parents.first.id,
+                          ),
+                        ),
+                      ),
+                      icon: const Icon(Icons.subdirectory_arrow_left, size: 16),
+                      label: Text(
+                        '이전 일정 · ${parents.first.title}',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ),
+                  if (schedule.memo.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Text('메모', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    SelectableText(schedule.memo),
+                  ],
+                  if (schedule.link.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Text(
+                      '참고 링크',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    SelectableText(schedule.link),
+                  ],
                 ],
-                if (schedule.link.isNotEmpty) ...[
-                  const SizedBox(height: 24),
-                  Text('참고 링크', style: Theme.of(context).textTheme.titleMedium),
-                  const SizedBox(height: 8),
-                  SelectableText(schedule.link),
-                ],
-              ],
+              ),
             ),
           ),
         ),
