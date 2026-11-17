@@ -121,7 +121,7 @@ class ScheduleDetail extends StatelessWidget {
                     Text(
                       '마감 ${formatDeadline(schedule)}',
                       style: TextStyle(
-                        fontSize: 13,
+                        fontSize: 14,
                         color: context.appColors.muted,
                       ),
                     ),
@@ -146,14 +146,16 @@ class ScheduleDetail extends StatelessWidget {
                           children: [
                             Text(
                               schedule.reminderDays.isEmpty
-                                  ? '이 일정은 알림이 꺼져 있어요'
+                                  ? '알림 없음'
                                   : '${schedule.reminderDays.map(reminderLabel).join(' · ')} / ${schedule.reminderHour.toString().padLeft(2, '0')}:${schedule.reminderMinute.toString().padLeft(2, '0')}',
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            if (schedule.reminderDays.isNotEmpty) ...[
+                            if (schedule.reminderDays.isNotEmpty &&
+                                (schedule.isCompleted ||
+                                    nextReminders.isEmpty)) ...[
                               const SizedBox(height: 5),
                               Text(
                                 schedule.isCompleted
@@ -162,7 +164,7 @@ class ScheduleDetail extends StatelessWidget {
                                     ? '선택한 알림 시각이 지나 예약할 알림이 없어요.'
                                     : '알림 수신 상태는 마이 → 마감 알림에서 확인해요.',
                                 style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: 14,
                                   color: context.appColors.muted,
                                 ),
                               ),
@@ -171,63 +173,6 @@ class ScheduleDetail extends StatelessWidget {
                         ),
                       ),
                     ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 18,
-                    horizontal: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.appColors.soft,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: ScheduleStage.values
-                        .map(
-                          (stage) => Expanded(
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: stage.index <= schedule.stage.index
-                                        ? context.appColors.forest
-                                        : Colors.white,
-                                  ),
-                                  child: Icon(
-                                    stage.index < schedule.stage.index
-                                        ? Icons.check_rounded
-                                        : stage == schedule.stage
-                                        ? Icons.circle
-                                        : Icons.circle_outlined,
-                                    size: stage == schedule.stage ? 9 : 16,
-                                    color: stage.index <= schedule.stage.index
-                                        ? context.appColors.lime
-                                        : context.appColors.muted,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  [
-                                    '준비',
-                                    '제출·처리',
-                                    '결과 대기',
-                                    '최종 완료',
-                                  ][stage.index],
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: context.appColors.forest,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .toList(),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -254,10 +199,10 @@ class ScheduleDetail extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  '준비가 끝나면 실제 제출·처리도 확인해주세요.\n진행 단계는 직접 변경할 수 있어요.',
+                  '진행 단계는 직접 변경해요.',
                   style: TextStyle(
                     color: context.appColors.muted,
-                    fontSize: 11,
+                    fontSize: 14,
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -269,7 +214,7 @@ class ScheduleDetail extends StatelessWidget {
                 if (schedule.items.isEmpty)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Text('아직 준비물이 없어요. 상단 수정 버튼으로 추가해보세요.'),
+                    child: Text('준비물 없음'),
                   ),
                 ...schedule.items.asMap().entries.map(
                   (entry) => Padding(
@@ -325,7 +270,7 @@ class ScheduleDetail extends StatelessWidget {
                               ),
                             ),
                       icon: const Icon(Icons.add_rounded, size: 17),
-                      label: const Text('추가', style: TextStyle(fontSize: 12)),
+                      label: const Text('추가', style: TextStyle(fontSize: 14)),
                     ),
                   ],
                 ),
@@ -333,9 +278,9 @@ class ScheduleDetail extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.symmetric(vertical: 10),
                     child: Text(
-                      '결과 발표, 추가 서류 제출 같은\n다음 일정을 연결해보세요.',
+                      '필요하면 다음 일정을 추가하세요.',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         color: context.appColors.muted,
                       ),
                     ),
@@ -349,7 +294,7 @@ class ScheduleDetail extends StatelessWidget {
                       ),
                       subtitle: Text(
                         '${formatDeadline(child)} · ${child.stage.label}',
-                        style: const TextStyle(fontSize: 11),
+                        style: const TextStyle(fontSize: 14),
                       ),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => Navigator.push(
@@ -374,7 +319,7 @@ class ScheduleDetail extends StatelessWidget {
                     icon: const Icon(Icons.subdirectory_arrow_left, size: 16),
                     label: Text(
                       '이전 일정 · ${parents.first.title}',
-                      style: const TextStyle(fontSize: 12),
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
                 if (schedule.memo.isNotEmpty) ...[

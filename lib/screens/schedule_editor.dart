@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../data/schedule_store.dart';
 import '../models/schedule.dart';
 import '../models/reminder_plan.dart';
@@ -83,9 +84,8 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
         reminderTime.hour * 60 + reminderTime.minute >=
             time!.hour * 60 + time!.minute) {
       setState(() => reminderError = '당일 알림은 마감 시간보다 이르게 설정해 주세요.');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(reminderError!)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(reminderError!)));
       return;
     }
     FocusScope.of(context).unfocus();
@@ -171,20 +171,12 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
             child: ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                Text(
-                  widget.followUpTo == null
-                      ? '어떤 일을\n챙겨볼까요?'
-                      : '그다음 일정도\n잊지 않도록.',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: 8),
-                const Text('제목과 마감일만으로 시작할 수 있어요.'),
                 if (widget.followUpTo != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 14),
                     child: Text(
                       '연결된 일정 · ${widget.followUpTo!.title}',
-                      style: const TextStyle(fontSize: 12),
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
                 const SizedBox(height: 24),
@@ -270,10 +262,7 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
                       : (value) => setState(() => category = value!),
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  '준비 체크리스트',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                Text('준비물', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
                 ...items.asMap().entries.map(
                   (entry) => ListTile(
@@ -315,19 +304,8 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                Text(
-                  '미리 알려드릴까요?',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
+                Text('알림', style: Theme.of(context).textTheme.titleMedium),
                 const SizedBox(height: 8),
-                Text(
-                  '선택하지 않으면 이 일정의 알림을 끌 수 있어요.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: context.appColors.muted,
-                  ),
-                ),
-                const SizedBox(height: 10),
                 Wrap(
                   spacing: 8,
                   runSpacing: 4,
@@ -375,13 +353,13 @@ class _ScheduleEditorState extends State<ScheduleEditor> {
                     reminderError!,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
-                      fontSize: 12,
+                      fontSize: 14,
                     ),
                   ),
                 Text(
-                  '지난 알림은 보내지 않아요. 절전 상태에서는 알림이 늦어질 수 있어요.',
+                  '절전 상태에서는 알림이 늦어질 수 있어요.',
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: 14,
                     color: context.appColors.muted,
                   ),
                 ),

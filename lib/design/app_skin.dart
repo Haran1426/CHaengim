@@ -76,7 +76,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   });
   const AppPalette.colors(this.paper, this.ink, this.forest, this.lime);
   final Color paper, ink, forest, lime;
-  Color get muted => Color.lerp(ink, paper, .30)!;
+  Color get muted => Color.lerp(ink, paper, .18)!;
   Color get line => Color.lerp(ink, paper, .89)!;
   Color get soft => Color.lerp(lime, paper, .65)!;
   Color get onForestMuted => Color.lerp(forest, Colors.white, .78)!;

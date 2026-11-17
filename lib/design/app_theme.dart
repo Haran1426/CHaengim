@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import 'app_skin.dart';
 export 'app_skin.dart';
 
@@ -52,9 +53,9 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
         letterSpacing: -.3,
       ),
       bodyMedium: text.bodyMedium?.copyWith(
-        fontSize: 14,
-        height: 1.6,
-        letterSpacing: -.2,
+        fontSize: 16,
+        height: 1.5,
+        letterSpacing: 0,
       ),
       bodyLarge: text.bodyLarge?.copyWith(
         fontSize: 16,
@@ -125,7 +126,7 @@ ThemeData buildAppTheme([AppSkin skin = AppSkin.forest]) {
       labelTextStyle: WidgetStateProperty.all(
         const TextStyle(
           fontFamily: 'Paperlogy',
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
       ),

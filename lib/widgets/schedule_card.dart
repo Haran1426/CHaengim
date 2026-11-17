@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+
 import '../design/app_theme.dart';
 import '../models/schedule.dart';
 
@@ -41,10 +42,10 @@ class ScheduleCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      featured ? '가장 먼저 챙겨요' : schedule.category,
+                      schedule.category,
                       style: TextStyle(
                         color: secondary,
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -71,7 +72,7 @@ class ScheduleCard extends StatelessWidget {
                             ? context.appColors.rust
                             : context.appColors.forest,
                         fontWeight: FontWeight.w700,
-                        fontSize: featured ? 19 : 13,
+                        fontSize: featured ? 18 : 15,
                       ),
                     ),
                   ),
@@ -84,7 +85,7 @@ class ScheduleCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: ink,
-                  fontSize: featured ? 24 : 18,
+                  fontSize: featured ? 23 : 19,
                   height: 1.4,
                   letterSpacing: -.6,
                   fontWeight: FontWeight.w600,
@@ -93,9 +94,9 @@ class ScheduleCard extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 '${formatDeadline(schedule)} 마감',
-                style: TextStyle(color: secondary, fontSize: 12),
+                style: TextStyle(color: secondary, fontSize: 14),
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Icon(
@@ -108,18 +109,29 @@ class ScheduleCard extends StatelessWidget {
                   const SizedBox(width: 7),
                   Expanded(
                     child: Text(
-                      '준비물 ${schedule.remaining}개 남음',
+                      schedule.items.isEmpty
+                          ? '준비물 없음'
+                          : schedule.remaining == 0
+                          ? '준비물 완료'
+                          : '준비물 ${schedule.remaining}개 남음',
                       style: TextStyle(
                         color: ink,
-                        fontSize: 13,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  Text(
-                    schedule.stage.label,
-                    style: TextStyle(color: secondary, fontSize: 11),
-                  ),
+                  if (schedule.stage == ScheduleStage.submitted ||
+                      schedule.stage == ScheduleStage.waiting)
+                    Flexible(
+                      child: Text(
+                        schedule.stage == ScheduleStage.submitted
+                            ? '제출 완료'
+                            : '결과 대기',
+                        textAlign: TextAlign.end,
+                        style: TextStyle(color: secondary, fontSize: 14),
+                      ),
+                    ),
                 ],
               ),
               if (schedule.items.isNotEmpty) ...[
@@ -127,6 +139,8 @@ class ScheduleCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
+                    semanticsLabel:
+                        '준비물 ${schedule.items.length}개 중 ${schedule.items.length - schedule.remaining}개 완료',
                     minHeight: 4,
                     color: featured
                         ? context.appColors.lime
@@ -138,11 +152,6 @@ class ScheduleCard extends StatelessWidget {
                         (schedule.items.length - schedule.remaining) /
                         schedule.items.length,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '준비물 ${schedule.items.length - schedule.remaining}/${schedule.items.length} 완료 · ${schedule.remaining}개 남음',
-                  style: TextStyle(color: secondary, fontSize: 10),
                 ),
               ],
             ],

@@ -45,14 +45,14 @@ void main() {
     expect(find.text('준비 중'), findsOneWidget);
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.text('준비물 1/1 완료 · 0개 남음'), findsOneWidget);
+    expect(find.text('준비물 완료'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpWidget(
       MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
     );
     await tester.pumpAndSettle();
     expect(find.text('장학금 신청'), findsOneWidget);
-    expect(find.text('준비물 1/1 완료 · 0개 남음'), findsOneWidget);
+    expect(find.text('준비물 완료'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
   testWidgets('완료 일정은 홈에서 제외하고 완료 필터에서 확인한다', (tester) async {
