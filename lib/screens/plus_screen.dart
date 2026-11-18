@@ -125,12 +125,14 @@ class _PlusScreenState extends State<PlusScreen> {
                           ? '스토어에서 확인 중…'
                           : plus.loading
                           ? '상품 확인 중…'
+                          : plus.paymentPending
+                          ? '결제 승인 대기 중'
                           : plus.offer != null
                           ? '${plus.offer!.price} · 플러스 시작하기'
                           : '출시 준비 중',
                     ),
                   ),
-                  if (!plus.isPlus && !plus.loading && plus.offer == null) ...[
+                  if (!plus.isPlus && !plus.configured) ...[
                     const SizedBox(height: 12),
                     Text(
                       '지금은 테마를 미리 둘러볼 수 있어요.\n판매가 시작되면 스토어 가격이 여기에 표시돼요.',
@@ -145,7 +147,10 @@ class _PlusScreenState extends State<PlusScreen> {
                   if (plus.message != null)
                     Padding(
                       padding: const EdgeInsets.only(top: 16),
-                      child: Text(plus.message!, semanticsLabel: plus.message),
+                      child: Semantics(
+                        liveRegion: true,
+                        child: Text(plus.message!),
+                      ),
                     ),
                   const SizedBox(height: 8),
                   Wrap(
@@ -153,10 +158,7 @@ class _PlusScreenState extends State<PlusScreen> {
                     spacing: 8,
                     children: [
                       TextButton(
-                        onPressed:
-                            plus.configured && !plus.busy && !plus.loading
-                            ? plus.restore
-                            : null,
+                        onPressed: plus.canRestore ? plus.restore : null,
                         child: const Text('구매 복원'),
                       ),
                       if (plus.configured)

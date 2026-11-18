@@ -21,7 +21,10 @@ abstract class PlusGateway {
 
 // 구매 권한은 검증된 스토어 응답에서만 얻습니다. 로컬 bool로 판매하지 않습니다.
 class RevenueCatGateway implements PlusGateway {
-  static const apiKey = String.fromEnvironment('REVENUECAT_ANDROID_KEY');
+  RevenueCatGateway({String? androidKey})
+    : apiKey =
+          androidKey ?? const String.fromEnvironment('REVENUECAT_ANDROID_KEY');
+  final String apiKey;
   static const entitlement = 'chaengim_plus';
   static const productId = 'chaengim_plus_lifetime';
   Package? _package;
@@ -58,6 +61,7 @@ class RevenueCatGateway implements PlusGateway {
   Future<bool> refresh() async => _isPlus(await Purchases.getCustomerInfo());
   @override
   Future<PlusOffer?> offer() async {
+    _package = null;
     final package = (await Purchases.getOfferings()).current?.lifetime;
     // 원하지 않는 구독/다른 상품이 대시보드에 설정되어도 판매하지 않습니다.
     if (package == null ||
@@ -73,10 +77,13 @@ class RevenueCatGateway implements PlusGateway {
 
   @override
   Future<bool> buy() async {
+    // 재설치·다른 기기에서 이미 산 상품이면 결제창 없이 권한부터 복원합니다.
+    if (await refresh()) return true;
     if (_package == null) throw StateError('상품이 준비되지 않았습니다.');
     return _isPlus(
-      (await Purchases.purchase(PurchaseParams.package(_package!)))
-          .customerInfo,
+      (await Purchases.purchase(
+        PurchaseParams.package(_package!),
+      )).customerInfo,
     );
   }
 
@@ -86,6 +93,7 @@ class RevenueCatGateway implements PlusGateway {
   void dispose() {
     if (_listener != null) {
       Purchases.removeCustomerInfoUpdateListener(_listener!);
+      _listener = null;
     }
   }
 }
@@ -95,6 +103,7 @@ class PlusStore extends ChangeNotifier {
   final PlusGateway gateway;
   final Duration requestTimeout;
   bool isPlus = false, loading = true, busy = false, resolved = false;
+  bool paymentPending = false;
   bool _initialized = false, _disposed = false;
   Future<void>? _refreshOperation, _initialization;
   int _entitlementRevision = 0;
@@ -102,7 +111,14 @@ class PlusStore extends ChangeNotifier {
   String? message;
   bool get configured => gateway.configured;
   bool get canBuy =>
-      configured && offer != null && !loading && !busy && !isPlus;
+      configured &&
+      resolved &&
+      offer != null &&
+      !loading &&
+      !busy &&
+      !isPlus &&
+      !paymentPending;
+  bool get canRestore => configured && !loading && !busy && !_disposed;
   bool get showAds => resolved && !isPlus;
 
   void _notify() {
@@ -113,6 +129,10 @@ class PlusStore extends ChangeNotifier {
     if (_disposed) return;
     _entitlementRevision++;
     isPlus = value;
+    if (value && paymentPending) {
+      paymentPending = false;
+      message = '결제가 승인됐어요. 플러스가 적용됐어요.';
+    }
     resolved = true;
     _notify();
   }
@@ -139,6 +159,8 @@ class PlusStore extends ChangeNotifier {
   Future<void> _refresh() async {
     loading = true;
     message = null;
+    // 실패한 재조회 뒤 이전 가격으로 구매를 다시 허용하지 않습니다.
+    offer = null;
     _notify();
     try {
       if (!configured) {
@@ -152,7 +174,12 @@ class PlusStore extends ChangeNotifier {
       if (_disposed) return;
       if (revision == _entitlementRevision) _update(active);
       final fetchedOffer = await gateway.offer().timeout(requestTimeout);
-      if (!_disposed) offer = fetchedOffer;
+      if (!_disposed) {
+        offer = fetchedOffer;
+        if (offer == null && !isPlus) {
+          message = '현재 구매할 수 있는 상품이 없어요. 잠시 후 다시 확인해 주세요.';
+        }
+      }
     } on TimeoutException {
       message = '스토어 응답이 늦어지고 있어요. 연결을 확인하고 다시 시도해 주세요.';
     } catch (_) {
@@ -173,24 +200,43 @@ class PlusStore extends ChangeNotifier {
     message = null;
     _notify();
     try {
-      if (!_initialized) {
-        await gateway.initialize(_update);
-        _initialized = true;
-      }
-      final active = restore ? await gateway.restore() : await gateway.buy();
-      _update(active);
-      message = active
+      await _ensureInitialized();
+      if (_disposed) return;
+      final revision = _entitlementRevision;
+      // 결제창은 사용자 입력을 기다리므로 임의로 시간 초과시키거나 재요청하지 않습니다.
+      final active = restore
+          ? await gateway.restore().timeout(requestTimeout)
+          : await gateway.buy();
+      if (_disposed) return;
+      if (revision == _entitlementRevision) _update(active);
+      message = isPlus
           ? (restore ? '플러스 구매를 복원했어요.' : '플러스와 함께 취향대로 챙겨요.')
           : restore
           ? '이 스토어 계정에서 플러스 구매를 찾지 못했어요.'
           : '구매 상태를 확인하고 있어요. 잠시 후 다시 확인해 주세요.';
     } on PlatformException catch (e) {
+      if (_disposed) return;
       final code = PurchasesErrorHelper.getErrorCode(e);
-      message = code == PurchasesErrorCode.purchaseCancelledError
-          ? '결제가 취소됐어요.'
-          : code == PurchasesErrorCode.paymentPendingError
-          ? '결제 승인 대기 중이에요. 승인 후 플러스가 적용돼요.'
-          : '구매를 확인하지 못했어요. 다시 시도하거나 구매 복원을 눌러 주세요.';
+      if (code == PurchasesErrorCode.paymentPendingError && !isPlus) {
+        paymentPending = true;
+      }
+      message = switch (code) {
+        PurchasesErrorCode.purchaseCancelledError => '결제가 취소됐어요.',
+        PurchasesErrorCode.paymentPendingError =>
+          isPlus ? '플러스가 적용됐어요.' : '결제 승인 대기 중이에요. 승인 후 플러스가 적용돼요.',
+        PurchasesErrorCode.productAlreadyPurchasedError =>
+          '이미 구매한 상품이에요. 같은 Google Play 계정으로 구매 복원을 눌러 주세요.',
+        PurchasesErrorCode.purchaseNotAllowedError =>
+          '이 기기나 Google Play 계정에서 결제할 수 없어요. 스토어 계정과 결제 설정을 확인해 주세요.',
+        PurchasesErrorCode.productNotAvailableForPurchaseError =>
+          '현재 구매할 수 없는 상품이에요. 잠시 후 다시 확인해 주세요.',
+        PurchasesErrorCode.networkError ||
+        PurchasesErrorCode.offlineConnectionError =>
+          '연결이 끊겨 구매 결과를 확인하지 못했어요. 다시 확인하거나 구매 복원을 눌러 주세요.',
+        _ => '구매를 확인하지 못했어요. 다시 시도하거나 구매 복원을 눌러 주세요.',
+      };
+    } on TimeoutException {
+      message = '구매 복원 응답이 늦어지고 있어요. 잠시 후 다시 확인해 주세요.';
     } catch (_) {
       message = '구매를 확인하지 못했어요. 연결 상태를 확인하고 다시 시도해 주세요.';
     } finally {

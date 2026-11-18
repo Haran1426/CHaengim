@@ -1,4 +1,5 @@
 import java.util.Properties
+import java.util.Base64
 
 plugins {
     id("com.android.application")
@@ -14,9 +15,29 @@ val storeBuild = providers.gradleProperty("chaengimStoreRelease").orNull == "tru
 val publishedApplicationId = providers.gradleProperty("chaengimApplicationId")
     .getOrElse("com.example.my_first_app")
 val previewBuild = providers.gradleProperty("chaengimPreview").orNull == "true"
+val dartDefines = providers.gradleProperty("dart-defines").orNull.orEmpty()
+    .split(',').filter { it.isNotBlank() }.mapNotNull {
+        runCatching { String(Base64.getDecoder().decode(it), Charsets.UTF_8) }.getOrNull()
+    }.associate { it.substringBefore('=') to it.substringAfter('=', "") }
+val requirePayments = providers.gradleProperty("chaengimRequirePayments").orNull == "true"
+val adsEnabled = dartDefines["ADMOB_LIVE_ENABLED"] == "true"
+val admobApplicationId = providers.gradleProperty("admobAppId")
+    .getOrElse("ca-app-pub-3940256099942544~3347511713")
 val uploadProperties = Properties()
 if (storeBuild) {
     require(!previewBuild) { "Store builds cannot use preview data." }
+    if (requirePayments) {
+        require(dartDefines["REVENUECAT_ANDROID_KEY"]?.matches(Regex("goog_[A-Za-z0-9]+")) == true) {
+            "Payment builds require the RevenueCat Android public SDK key."
+        }
+    }
+    if (adsEnabled) {
+        require(admobApplicationId.matches(Regex("ca-app-pub-[0-9]{16}~[0-9]{10}")) &&
+            !admobApplicationId.startsWith("ca-app-pub-3940256099942544")) { "Live ads require your own AdMob app ID." }
+        val banner = dartDefines["ADMOB_ANDROID_BANNER_ID"].orEmpty()
+        require(banner.matches(Regex("ca-app-pub-[0-9]{16}/[0-9]{10}")) &&
+            banner.substringBefore('/') == admobApplicationId.substringBefore('~')) { "Live ads require a banner ID for the same AdMob publisher." }
+    }
     require(
         publishedApplicationId.matches(Regex("[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+")) &&
             !publishedApplicationId.startsWith("com.example.")
@@ -54,8 +75,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         // Defaults to Google's demo app. Release ads remain off without Dart configuration.
-        manifestPlaceholders["admobAppId"] = providers.gradleProperty("admobAppId")
-            .getOrElse("ca-app-pub-3940256099942544~3347511713")
+        manifestPlaceholders["admobAppId"] = admobApplicationId
     }
 
     signingConfigs {

@@ -63,3 +63,4 @@ app.*.map.json
 *.keystore
 *.apk
 *.aab
+/config/*.local.json
