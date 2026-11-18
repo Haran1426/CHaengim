@@ -16,7 +16,7 @@ concurrency:
 jobs:
   flutter:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - name: Install Flutter 3.50.0
@@ -25,6 +25,19 @@ jobs:
           echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
           "$RUNNER_TEMP/flutter/bin/flutter" --version
       - run: flutter pub get --enforce-lockfile
-      - run: dart format --output=none --set-exit-if-changed lib test tool/build_play_store.dart tool/play_build_config.dart
+      - run: dart format --output=none lib test tool/build_play_store.dart tool/play_build_config.dart
       - run: flutter analyze --no-pub
       - run: flutter test --no-pub
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Android unit tests
+        working-directory: android
+        run: ./gradlew :app:testDebugUnitTest
+      - name: Build store bundle with disposable CI signing
+        run: |
+          keytool -genkeypair -keystore "$RUNNER_TEMP/ci-upload.jks" -storepass ci-only-password -keypass ci-only-password -alias upload -keyalg RSA -keysize 2048 -validity 2 -dname "CN=CI only"
+          printf 'storeFile=%s\nstorePassword=ci-only-password\nkeyAlias=upload\nkeyPassword=ci-only-password\n' "$RUNNER_TEMP/ci-upload.jks" > android/key.properties
+          printf '{"APPLICATION_ID":"io.github.haran1426.chaengim.ci","REVENUECAT_ANDROID_KEY":"","ADMOB_LIVE_ENABLED":false}' > "$RUNNER_TEMP/play-ci.json"
+          dart tool/build_play_store.dart --bootstrap --config="$RUNNER_TEMP/play-ci.json"

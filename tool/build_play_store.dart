@@ -61,10 +61,11 @@ Future<void> main(List<String> args) async {
       final trimmed = line.trim();
       if (trimmed.startsWith('#') || trimmed.startsWith('!')) continue;
       final separator = line.indexOf('=');
-      if (separator > 0)
+      if (separator > 0) {
         properties[line.substring(0, separator).trim()] = line
             .substring(separator + 1)
             .trim();
+      }
     }
     for (final name in [
       'storeFile',
@@ -72,8 +73,9 @@ Future<void> main(List<String> args) async {
       'keyAlias',
       'keyPassword',
     ]) {
-      if (properties[name]?.isNotEmpty != true)
+      if (properties[name]?.isNotEmpty != true) {
         errors.add('업로드 서명 설정에서 $name 항목이 빠졌어요.');
+      }
     }
     final path = properties['storeFile'];
     if (path != null && path.isNotEmpty) {
@@ -83,8 +85,9 @@ Future<void> main(List<String> args) async {
       final resolved = keyFile.isAbsolute
           ? keyFile
           : File('${root.path}/android/$normalized');
-      if (!resolved.existsSync())
+      if (!resolved.existsSync()) {
         errors.add('storeFile에 지정한 업로드 키 파일을 찾지 못했어요.');
+      }
     }
   }
   if (errors.isNotEmpty) {
@@ -110,10 +113,11 @@ Future<void> main(List<String> args) async {
       mode: ProcessStartMode.inheritStdio,
     );
     exitCode = await process.exitCode;
-    if (exitCode == 0)
+    if (exitCode == 0) {
       stdout.writeln(
         'AAB 생성 완료: ${root.path}/build/app/outputs/bundle/release/app-release.aab\nPlay Console 내부 테스트에 업로드한 뒤 라이선스 테스트 계정으로 구매·복원을 확인하세요.',
       );
+    }
   } on ProcessException {
     stderr.writeln('Flutter를 실행하지 못했어요. PATH를 확인하거나 --flutter=전체경로 옵션을 사용하세요.');
     exitCode = 1;

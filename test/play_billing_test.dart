@@ -23,11 +23,7 @@ class BillingGateway extends FakePlusGateway {
 
 void main() {
   test('대기 결제는 중복 구매를 막고 SDK 승인 통지로 혜택을 적용한다', () async {
-    final gateway = BillingGateway()
-      ..failure = PlatformException(
-        code: '${PurchasesErrorCode.paymentPendingError.index}',
-      );
-    gateway.failure = null;
+    final gateway = BillingGateway();
     final plus = PlusStore(gateway);
     await plus.refresh();
     gateway.failure = PlatformException(

@@ -39,7 +39,11 @@ class RevenueCatGateway implements PlusGateway {
     if (info.entitlements.verification == VerificationResult.failed) {
       throw StateError('구매 정보 검증에 실패했습니다.');
     }
-    return info.entitlements.active[entitlement]?.isActive == true;
+    final plus = info.entitlements.active[entitlement];
+    if (plus?.verification == VerificationResult.failed) {
+      throw StateError('구매 권한 검증에 실패했습니다.');
+    }
+    return plus?.isActive == true;
   }
 
   @override
@@ -217,6 +221,8 @@ class PlusStore extends ChangeNotifier {
     } on PlatformException catch (e) {
       if (_disposed) return;
       final code = PurchasesErrorHelper.getErrorCode(e);
+      if (code == PurchasesErrorCode.productNotAvailableForPurchaseError)
+        offer = null;
       if (code == PurchasesErrorCode.paymentPendingError && !isPlus) {
         paymentPending = true;
       }

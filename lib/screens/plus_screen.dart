@@ -129,6 +129,8 @@ class _PlusScreenState extends State<PlusScreen> {
                           ? '결제 승인 대기 중'
                           : plus.offer != null
                           ? '${plus.offer!.price} · 플러스 시작하기'
+                          : plus.configured
+                          ? '지금은 구매할 수 없어요'
                           : '출시 준비 중',
                     ),
                   ),
