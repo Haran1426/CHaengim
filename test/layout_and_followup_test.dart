@@ -90,8 +90,16 @@ void main() {
     expect(tester.takeException(), null);
     await tester.tap(find.text('홈'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('위젯 가이드'));
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('home-add-widget')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
+    expect(tester.takeException(), null);
+    await tester.tap(find.byKey(const ValueKey('home-add-widget')));
+    await tester.pumpAndSettle();
+    expect(find.text('홈 화면 위젯'), findsOneWidget);
     expect(tester.takeException(), null);
     await tester.pumpWidget(const SizedBox());
     await tester.pumpWidget(
@@ -107,6 +115,13 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(
+      find.byKey(const ValueKey('home-add-widget')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('다가오는 일정 없음'), findsOneWidget);
     expect(tester.takeException(), null);
     await tester.pumpWidget(const SizedBox());
   });

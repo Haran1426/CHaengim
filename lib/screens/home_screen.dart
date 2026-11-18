@@ -8,6 +8,7 @@ import '../models/schedule.dart';
 import '../platform/widget_bridge.dart';
 import '../widgets/schedule_card.dart';
 import '../widgets/week_overview.dart';
+import '../widgets/widget_setup_card.dart';
 import 'schedule_editor.dart';
 import 'schedule_detail.dart';
 import 'widget_guide.dart';
@@ -89,8 +90,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             ),
           );
         } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text('이 일정은 삭제되었어요.')));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('이 일정은 삭제되었어요.')));
         }
       }
     });
@@ -521,6 +523,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                                   ),
                                 ),
                           ],
+                          const SizedBox(height: 24),
+                          WidgetSetupCard(
+                            schedule: active.firstOrNull,
+                            onAdd: guide,
+                          ),
                         ],
                         if (tab == 1) ...[
                           TextField(
