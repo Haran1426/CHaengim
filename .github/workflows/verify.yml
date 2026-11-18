@@ -34,7 +34,9 @@ jobs:
           java-version: '21'
       - name: Android unit tests
         working-directory: android
-        run: ./gradlew :app:testDebugUnitTest
+        run: |
+          printf 'sdk.dir=%s\nflutter.sdk=%s\n' "$ANDROID_HOME" "$RUNNER_TEMP/flutter" > local.properties
+          ./gradlew :app:testDebugUnitTest
       - name: Build store bundle with disposable CI signing
         run: |
           keytool -genkeypair -keystore "$RUNNER_TEMP/ci-upload.jks" -storepass ci-only-password -keypass ci-only-password -alias upload -keyalg RSA -keysize 2048 -validity 2 -dname "CN=CI only"

@@ -54,7 +54,9 @@ class RevenueCatGateway implements PlusGateway {
     await Purchases.configure(config);
     _listener = (info) {
       // 검증 실패 때 기존 권한을 덮어쓰지 않고 다음 새로고침에서 재확인합니다.
-      if (info.entitlements.verification != VerificationResult.failed) {
+      if (info.entitlements.verification != VerificationResult.failed &&
+          info.entitlements.active[entitlement]?.verification !=
+              VerificationResult.failed) {
         onChanged(_isPlus(info));
       }
     };

@@ -131,7 +131,7 @@ void main() {
     expect(await gateway.offer(), isNotNull);
     category = 'SUBSCRIPTION';
     expect(await gateway.offer(), isNull);
-    expect(gateway.buy(), throwsStateError);
+    await expectLater(gateway.buy(), throwsStateError);
     category = 'NON_SUBSCRIPTION';
     productId = 'other_product';
     expect(await gateway.offer(), isNull);
