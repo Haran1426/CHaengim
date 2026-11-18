@@ -221,8 +221,9 @@ class PlusStore extends ChangeNotifier {
     } on PlatformException catch (e) {
       if (_disposed) return;
       final code = PurchasesErrorHelper.getErrorCode(e);
-      if (code == PurchasesErrorCode.productNotAvailableForPurchaseError)
+      if (code == PurchasesErrorCode.productNotAvailableForPurchaseError) {
         offer = null;
+      }
       if (code == PurchasesErrorCode.paymentPendingError && !isPlus) {
         paymentPending = true;
       }

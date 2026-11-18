@@ -27,6 +27,8 @@
 
 ## 스토어 연결
 
+최신 단계별 절차와 빌드 명령은 [Google Play 결제 연결 순서](play-billing-setup.md)를 우선 확인하세요.
+
 1. 정식 Android applicationId와 릴리스 서명을 정하고 Google Play Console에 앱을 등록합니다. 현재 `com.example.my_first_app` 및 debug 서명은 개발용입니다.
 2. Play에 비소모성 상품 `chaengim_plus_lifetime`을 만들고 가격을 지정합니다.
 3. RevenueCat에 Android 앱과 Google Play 서비스를 연결하고 해당 상품을 가져옵니다. entitlement `chaengim_plus`에 연결하고 현재 offering의 **lifetime** 패키지로 지정합니다. 앱은 상품 ID와 nonSubscription 유형이 일치할 때만 구매를 허용합니다.
@@ -57,6 +59,8 @@ flutter build appbundle --release --dart-define=REVENUECAT_ANDROID_KEY=goog_REPL
 - `lib/data/plus_store.dart`: 스토어 연결, 구매/복원 상태. 테스트에서는 가짜 gateway 주입.
 - `lib/platform/ads_controller.dart`, `lib/widgets/sponsor_banner.dart`: 동의와 배너 수명 관리.
 - `test/commerce_test.dart`: 잠금·구매 상태·복원·테마 저장·작은 화면·위젯 전달 검증.
+- `test/play_billing_test.dart`, `test/revenuecat_gateway_test.dart`: 대기 중 중복 구매 차단·복원 시간 초과·오래된 가격 차단·SDK 채널의 lifetime 상품/검증 응답.
+- `tool/build_play_store.dart`, `config/play-store.example.json`: 로컬 설정 한 곳에서 최초 등록/결제 연동 AAB 생성. `*.local.json`은 Git에서 제외.
 
 공식 참고: [RevenueCat Flutter](https://www.revenuecat.com/docs/getting-started/installation/flutter), [구매 권한](https://www.revenuecat.com/docs/getting-started/entitlements), [구매 복원](https://www.revenuecat.com/docs/getting-started/restoring-purchases), [AdMob 테스트 광고](https://developers.google.com/admob/flutter/test-ads), [배너](https://developers.google.com/admob/flutter/banner), [UMP](https://developers.google.com/admob/flutter/privacy).
 
