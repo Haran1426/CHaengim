@@ -57,7 +57,7 @@ dart tool/build_play_store.dart --check
 dart tool/build_play_store.dart
 ```
 
-Flutter가 PATH에 없으면 `--flutter=C:/SDK/flutter/bin/flutter.bat`처럼 전체 경로를 지정합니다. Flutter 3.50 이상이 필요합니다.
+Flutter가 PATH에 없으면 `--flutter=C:/SDK/flutter/bin/flutter.bat`처럼 전체 경로를 지정합니다. Flutter 3.47 이상이 필요하며 개발 기준 버전은 3.47.9입니다.
 
 로컬 설정 검사에서 패키지 ID·공개 키 형식·서명 파일 유무·광고 설정을 확인합니다. 실제 키 비밀번호, 스토어 연결, 상품 활성화 여부는 빌드/콘솔/실제 기기에서 별도로 확인합니다. AAB 파일명은 같으므로 새 업로드마다 pubspec의 build number를 이전 Play 업로드보다 높여야 합니다. 앱 설명·개인정보 URL 등의 제출 준비도 [출시 문서](google-play-launch.md)에 남아 있습니다.
 

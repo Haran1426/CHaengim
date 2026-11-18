@@ -78,5 +78,7 @@ void main() {
     expect(find.text('2개의 알림이 예약되어 있어요'), findsOneWidget);
     expect(find.text('Android 알림이 꺼져 있어요'), findsNothing);
     await tester.pumpWidget(const SizedBox());
+    // Flutter 3.47 checks debug overrides before addTearDown callbacks run.
+    debugDefaultTargetPlatformOverride = null;
   });
 }
