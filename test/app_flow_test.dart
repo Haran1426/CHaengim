@@ -51,7 +51,13 @@ void main() {
       MyApp(storage: storage, appearanceStorage: MemoryAppearanceStorage()),
     );
     await tester.pumpAndSettle();
-    expect(find.text('장학금 신청'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(ScheduleCard),
+        matching: find.text('장학금 신청'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('준비물 완료'), findsOneWidget);
     await tester.pumpWidget(const SizedBox());
   });
