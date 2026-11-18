@@ -48,7 +48,7 @@ Android 빌드 환경과 Windows 설정은 [개발 환경 설정](docs/developme
 
 출시는 Google Play를 먼저 준비합니다. 정식 패키지 ID·업로드 서명·개인정보 및 SDK 신고 등 남은 작업은 [Google Play 출시 준비](docs/google-play-launch.md)를 참고하세요.
 
-계정 심사 후 결제 연결은 [Google Play 결제 순서](docs/play-billing-setup.md)를 따라 진행합니다. `dart tool/build_play_store.dart --check`로 로컬 설정을 검사할 수 있습니다. GitHub Actions는 Flutter 3.50 코드 검사·테스트·임시 서명 AAB 빌드를 수행하며 스토어에 자동 제출하지 않습니다.
+계정 심사 후 결제 연결은 [Google Play 결제 순서](docs/play-billing-setup.md)를 따라 진행합니다. `dart tool/build_play_store.dart --check`로 로컬 설정을 검사할 수 있습니다. GitHub Actions는 Flutter 3.50 코드 검사와 테스트를 실행합니다. Android 테스트·임시 서명 AAB 검증은 필요할 때 수동 옵션이나 커밋 메시지의 `[android]`로 요청하며 스토어에 자동 제출하지 않습니다.
 
 ## 코드 구조
 

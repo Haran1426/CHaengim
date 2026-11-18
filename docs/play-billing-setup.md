@@ -86,3 +86,7 @@ Play 테스트 참여 계정과 **라이선스 테스트 계정**은 별개로 �
 결제부터 시험할 때 `ADMOB_LIVE_ENABLED`를 false로 둬도 됩니다. 실광고를 켤 때 자체 `ADMOB_ANDROID_APP_ID`와 `ADMOB_ANDROID_BANNER_ID`를 입력하고 true로 바꿉니다. Google 데모 ID나 게시자가 다른 두 ID는 사전 검사에서 차단됩니다. 동의 메시지·공개 개인정보 안내·Play 신고도 최종 SDK 설정과 맞춰야 합니다.
 
 참고: [Play Billing 테스트](https://developer.android.com/google/play/billing/test), [RevenueCat Play 테스트](https://www.revenuecat.com/docs/test-and-launch/sandbox/google-play-store), [비소모성 상품](https://www.revenuecat.com/docs/platform-resources/non-subscriptions), [구매 검증](https://www.revenuecat.com/docs/customers/trusted-entitlements).
+
+## 2026-11-18 검증
+
+[GitHub Actions 검증 기록](https://github.com/Haran1426/CHaengim/actions/runs/44315503838)에서 Flutter 3.50.0 / Dart 3.14.0 분석 지적 없음, Flutter 테스트 56개 및 Android 단위 테스트 8개 통과, 임시 서명으로 최초 등록용 AAB 생성(74.9MB)을 확인했습니다. CI 전용 패키지와 폐기용 키로 확인했으며 실제 제출 파일로 배포하지 않았습니다. 실제 Play 테스트 구매·복원·환불은 계정/상품 연결 후 확인해야 합니다.
